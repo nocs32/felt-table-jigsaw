@@ -24,6 +24,8 @@ const codeBlocks = [
 
 const nestedFunctionMessage = 'Only arrow functions (lambdas) may be declared inside another function.';
 
+const pureModuleMessage = 'engine and protocol are shared by web and core-api: keep them free of DOM, Node and framework code.';
+
 // Names are camelCase. Types are PascalCase. Object keys and type members are not checked
 // because they often mirror external shapes (CSS, HTTP headers, API JSON, ESLint visitors).
 const namingBase = [
@@ -59,6 +61,8 @@ const houseStyle = {
   '@stylistic/no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
   '@stylistic/lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
   '@typescript-eslint/naming-convention': ['error', ...namingBase],
+  'local/kebab-case-filenames': 'error',
+  'local/folder-index': 'error',
 };
 
 export default defineConfig([
@@ -94,5 +98,20 @@ export default defineConfig([
     languageOptions: { globals: { ...globals.browser } },
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
+  },
+  {
+    // Shared modules run in the browser and on the server: no DOM, Node or framework code.
+    files: ['modules/engine/src/**', 'modules/protocol/src/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: ['node:*', 'react', 'react-*', 'mobx*', 'express', 'colyseus*'], message: pureModuleMessage },
+          ],
+        },
+      ],
+      'no-restricted-globals': ['error', 'window', 'document', 'navigator', 'localStorage', 'process', 'Buffer'],
+    },
   },
 ]);

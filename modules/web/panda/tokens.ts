@@ -1,0 +1,67 @@
+import { defineTokens } from '@pandacss/dev';
+
+// Palette from the Ark UI docs (dark): Radix "sand" greys with Ark's coral accent.
+export const tokens = defineTokens({
+  fonts: {
+    body: { value: 'Lato, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif' },
+    mono: { value: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace' },
+    emoji: { value: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' },
+  },
+  colors: {
+    sand: {
+      1: { value: '#111110' },
+      2: { value: '#191918' },
+      3: { value: '#222221' },
+      4: { value: '#2A2A28' },
+      5: { value: '#31312E' },
+      6: { value: '#3B3A37' },
+      7: { value: '#494844' },
+      8: { value: '#62605B' },
+      9: { value: '#6F6D66' },
+      10: { value: '#7C7B74' },
+      11: { value: '#B5B3AD' },
+      12: { value: '#EEEEEC' },
+    },
+    coral: {
+      1: { value: '#1C1412' },
+      2: { value: '#391A18' },
+      3: { value: '#55221E' },
+      4: { value: '#722B25' },
+      5: { value: '#8E342B' },
+      6: { value: '#AA3D32' },
+      7: { value: '#C6493A' },
+      8: { value: '#E2503F' },
+      9: { value: '#EB5E41' },
+      10: { value: '#EF6B4E' },
+      11: { value: '#F47A5C' },
+      12: { value: '#FAA19B' },
+    },
+    status: {
+      red: { value: '#E5484D' },
+      green: { value: '#30A46C' },
+    },
+    player: {
+      raspberry: { value: '#E01E5A' },
+      sky: { value: '#1D9BD1' },
+      green: { value: '#2EB67D' },
+      mustard: { value: '#ECB22E' },
+      violet: { value: '#8E5BD9' },
+      orange: { value: '#F2711C' },
+      teal: { value: '#0FA3A3' },
+      pink: { value: '#E255A1' },
+      lime: { value: '#7CB342' },
+      indigo: { value: '#4F6BED' },
+    },
+    table: {
+      feltGreen: { value: '#1E3C36' },
+      feltNavy: { value: '#1C2B45' },
+      feltBurgundy: { value: '#4A1E2A' },
+      feltCharcoal: { value: '#2A2D31' },
+      walnut: { value: '#4E321F' },
+      oak: { value: '#A77B4F' },
+      cork: { value: '#B98E5E' },
+      slate: { value: '#3D4650' },
+      linen: { value: '#D9CFBF' },
+    },
+  },
+});

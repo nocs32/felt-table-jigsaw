@@ -1,5 +1,8 @@
 // PascalCase is reserved for React components: a PascalCase function must render JSX.
-// Covers `function Name()`, `const Name = () => …` and `const Name = memo(…)` / `forwardRef(…)` / `observer(…)`.
+// Components are named functions, never arrows:
+//   export function Avatar(…) { … }
+//   export const Room = observer(function Room() { … });
+// Covers `function Name()`, `const Name = …` and `const Name = memo(…)` / `forwardRef(…)` / `observer(…)`.
 
 const pascalCase = /^[A-Z]/;
 const wrappers = new Set(['memo', 'forwardRef', 'observer']);
@@ -24,17 +27,27 @@ const declaredId = (node) => {
 const report = (context, entry) => {
   const id = declaredId(entry.node);
 
-  if (id?.type === 'Identifier' && pascalCase.test(id.name) && !entry.hasJsx) {
+  if (id?.type !== 'Identifier' || !pascalCase.test(id.name)) return;
+
+  if (!entry.hasJsx) {
     context.report({ node: id, messageId: 'notComponent', data: { name: id.name } });
+
+    return;
+  }
+
+  if (entry.node.id?.name !== id.name) {
+    context.report({ node: id, messageId: 'namedFunction', data: { name: id.name } });
   }
 };
 
 export default {
   meta: {
     type: 'suggestion',
-    docs: { description: 'Allow PascalCase function names only for React components (functions that render JSX).' },
+    docs: { description: 'PascalCase only for React components, written as named functions.' },
     messages: {
       notComponent: '`{{name}}` is PascalCase but renders no JSX. PascalCase is reserved for React components; use camelCase.',
+      namedFunction:
+        'Write the `{{name}}` component as a named function: `export function {{name}}(…) {…}` or `observer(function {{name}}(…) {…})`.',
     },
     schema: [],
   },

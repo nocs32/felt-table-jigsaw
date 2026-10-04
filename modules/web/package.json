@@ -3,20 +3,34 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prepare": "panda codegen",
+    "codegen": "panda codegen",
     "dev": "vite",
-    "build": "vite build",
+    "build": "panda codegen && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"
   },
   "dependencies": {
+    "@ark-ui/react": "^5.39.2",
+    "@felt-table/engine": "workspace:*",
+    "@felt-table/protocol": "workspace:*",
+    "@fontsource/lato": "^5.3.0",
+    "frimousse": "^0.4.0",
+    "i18next": "^26.4.2",
+    "mobx": "^7.0.6",
+    "mobx-react-lite": "^5.1.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@pandacss/dev": "^2.1.1",
+    "@pandacss/preset-base": "^2.1.1",
+    "@pandacss/preset-panda": "^2.1.1",
     "@types/node": "^24.19.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "vite": "^8.3.2"
+    "vite": "^8.3.2",
+    "vite-plugin-svgr": "^5.2.0"
   }
 }

@@ -1,13 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-    "types": ["vite/client"],
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
+    "types": ["vite/client", "vite-plugin-svgr/client"],
+    "paths": {
+      "styled-system/*": ["./styled-system/*"]
+    },
   },
-  "include": ["src"]
+  "include": ["src", "styled-system"]
 }

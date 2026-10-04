@@ -1,0 +1,30 @@
+// Icons from Lucide (ISC, see lucide-license.txt), imported as React components via ?react (vite-plugin-svgr).
+// They size to 1em and inherit currentColor: set size and colour on the parent in styled-components.ts.
+export { default as AddReactionIcon } from './add-reaction.svg?react';
+export { default as AlertIcon } from './alert.svg?react';
+export { default as CelebrateIcon } from './celebrate.svg?react';
+export { default as ChatIcon } from './chat.svg?react';
+export { default as CheckIcon } from './check.svg?react';
+export { default as ChevronDownIcon } from './chevron-down.svg?react';
+export { default as CloseIcon } from './close.svg?react';
+export { default as CopyIcon } from './copy.svg?react';
+export { default as DicesIcon } from './dices.svg?react';
+export { default as EdgesIcon } from './edges.svg?react';
+export { default as ExternalLinkIcon } from './external-link.svg?react';
+export { default as FitIcon } from './fit.svg?react';
+export { default as GridIcon } from './grid.svg?react';
+export { default as HashIcon } from './hash.svg?react';
+export { default as ImageIcon } from './image.svg?react';
+export { default as LinkIcon } from './link.svg?react';
+export { default as PaletteIcon } from './palette.svg?react';
+export { default as PlusIcon } from './plus.svg?react';
+export { default as PuzzleIcon } from './puzzle.svg?react';
+export { default as SearchIcon } from './search.svg?react';
+export { default as SendIcon } from './send.svg?react';
+export { default as SoundOffIcon } from './sound-off.svg?react';
+export { default as SoundOnIcon } from './sound-on.svg?react';
+export { default as SparklesIcon } from './sparkles.svg?react';
+export { default as SpinnerIcon } from './spinner.svg?react';
+export { default as UploadIcon } from './upload.svg?react';
+export { default as ZoomInIcon } from './zoom-in.svg?react';
+export { default as ZoomOutIcon } from './zoom-out.svg?react';

@@ -23,7 +23,8 @@ Shared building blocks are named for what they are: `ImageStore`, `logger`, `lim
 
 ## 2. One unit per file
 - One class, one router or one handler group per file.
-- The file is named after it: `TableRoomHolds.ts`, `imagesRouter.ts`.
+- Files and folders are kebab-case, named after what they hold: `table-room-holds.ts` (`TableRoomHolds`), `images-router.ts` (`imagesRouter`). The lint rule `local/kebab-case-filenames` enforces it.
+- A unit with sub-units becomes a folder: `index.ts` holds the main unit, and each sub-unit gets a short-named file next to it (`table-room/index.ts`, `table-room/holds.ts`).
 
 ## 3. Edges are thin
 This is the backend version of "components only render". Express route handlers and live message handlers do exactly three things:
@@ -70,14 +71,14 @@ src/
 ├─ config.ts
 ├─ logger.ts
 ├─ limits.ts
-├─ health/healthRouter.ts
+├─ health/health-router.ts
 ├─ images/
-│  ├─ imagesRouter.ts
-│  ├─ imagesUploadHandler.ts
-│  └─ ImageStore.ts
-└─ rooms/
-   ├─ TableRoom.ts
-   ├─ TableRoomHolds.ts
-   ├─ TableRoomFeed.ts
-   └─ TableRoomLifecycle.ts
+│  ├─ images-router.ts
+│  ├─ images-upload-handler.ts
+│  └─ image-store.ts
+└─ table-room/
+   ├─ index.ts                TableRoom
+   ├─ holds.ts                TableRoomHolds
+   ├─ feed.ts                 TableRoomFeed
+   └─ lifecycle.ts            TableRoomLifecycle
 ```
