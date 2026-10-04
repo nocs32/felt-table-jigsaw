@@ -1,5 +1,6 @@
 import type { PuzzleCut } from '@felt-table/engine';
 import type { PlayerColor } from '@felt-table/protocol';
+import { easeOut, liftAt, liftMs, motionShare, slideMs } from './board-motion';
 import type { PieceArt } from './types';
 
 export interface BoardCamera {
@@ -18,10 +19,31 @@ export interface BoardGroup {
   heldBy: string;
 }
 
+// Rising into your hand (0 → 1) or settling back (→ 0), from `startedAt`.
+export interface BoardLift {
+  from: number;
+  to: number;
+  startedAt: number;
+}
+
+// A group gliding from where it was let go to where the server put it (a snap), from `startedAt`.
+export interface BoardSlide {
+  fromX: number;
+  fromY: number;
+  startedAt: number;
+}
+
 // A group as drawn: yours in hand is lifted; someone else's in hand is outlined in their colour.
 export interface BoardShownGroup extends BoardGroup {
-  lifted: boolean;
+  lift: BoardLift | null;
+  slide: BoardSlide | null;
   outline: PlayerColor | null;
+}
+
+// Where a group is drawn this frame, and how lifted it looks.
+interface PlacedGroup extends BoardShownGroup {
+  height: number;
+  moving: boolean;
 }
 
 // Pieces that just snapped together, glowing for a moment from `startedAt` (performance.now()).
@@ -76,6 +98,16 @@ const shownPieces = (scene: BoardScene, group: BoardGroup, view: View): number[]
     return x < view.right && x + piece.bounds.width > view.left && y < view.bottom && y + piece.bounds.height > view.top;
   });
 
+const place = (group: BoardShownGroup, now: number): PlacedGroup => {
+  const { lift, slide } = group;
+  const glide = slide ? easeOut(motionShare(slide.startedAt, slideMs, now)) : 1;
+  const x = slide ? slide.fromX + (group.x - slide.fromX) * glide : group.x;
+  const y = slide ? slide.fromY + (group.y - slide.fromY) * glide : group.y;
+  const moving = (lift !== null && now - lift.startedAt < liftMs) || (slide !== null && glide < 1);
+
+  return { ...group, x, y, height: lift ? liftAt(lift, now) : 0, moving };
+};
+
 // Strokes the outlines of some pieces of a group (held outlines, the snap glow).
 const strokePieces = (paint: CanvasRenderingContext2D, scene: BoardScene, group: BoardGroup, pieces: readonly number[]): void => {
   for (const id of pieces) {
@@ -91,10 +123,10 @@ const strokePieces = (paint: CanvasRenderingContext2D, scene: BoardScene, group:
   }
 };
 
-const paintGroup = (paint: CanvasRenderingContext2D, scene: BoardScene, group: BoardShownGroup, view: View): void => {
+const paintGroup = (paint: CanvasRenderingContext2D, scene: BoardScene, group: PlacedGroup, view: View): void => {
   const shown = shownPieces(scene, group, view);
   // A group in hand casts a longer shadow, as if lifted off the table.
-  const lift = scene.cut.pieceSize * (group.lifted ? 0.09 : 0.025);
+  const lift = scene.cut.pieceSize * (0.025 + 0.065 * group.height);
 
   for (const id of shown) {
     const sprite = scene.art.sprites[id];
@@ -113,11 +145,11 @@ const paintGroup = (paint: CanvasRenderingContext2D, scene: BoardScene, group: B
   }
 };
 
-const paintOutlines = (paint: CanvasRenderingContext2D, scene: BoardScene, size: BoardSize): void => {
+const paintOutlines = (paint: CanvasRenderingContext2D, scene: BoardScene, groups: readonly PlacedGroup[], size: BoardSize): void => {
   paint.lineJoin = 'round';
   paint.lineWidth = 3 / scene.camera.zoom;
 
-  for (const group of scene.groups) {
+  for (const group of groups) {
     if (group.outline) {
       paint.strokeStyle = size.palette(group.outline);
       strokePieces(paint, scene, group, group.pieces);
@@ -126,7 +158,7 @@ const paintOutlines = (paint: CanvasRenderingContext2D, scene: BoardScene, size:
 };
 
 // Returns whether the glow is still fading (so another frame is needed).
-const paintGlow = (paint: CanvasRenderingContext2D, scene: BoardScene, now: number): boolean => {
+const paintGlow = (paint: CanvasRenderingContext2D, scene: BoardScene, groups: readonly PlacedGroup[], now: number): boolean => {
   const { glow } = scene;
   const progress = glow ? (now - glow.startedAt) / glowMs : 1;
 
@@ -137,14 +169,15 @@ const paintGlow = (paint: CanvasRenderingContext2D, scene: BoardScene, now: numb
   paint.lineJoin = 'round';
   paint.lineWidth = 2.6 / scene.camera.zoom;
   paint.strokeStyle = `rgba(255, 236, 190, ${((1 - progress) * 0.9).toFixed(3)})`;
-  scene.groups.forEach((group) => strokePieces(paint, scene, group, group.pieces.filter((id) => glowing.has(id))));
+  groups.forEach((group) => strokePieces(paint, scene, group, group.pieces.filter((id) => glowing.has(id))));
 
   return true;
 };
 
 // Draws one frame of the table: each group's shadow then its pieces, bottom to top, so a group on
 // top casts its shadow onto the ones below; then held outlines and the snap glow. The canvas is
-// see-through: the felt is the page's own. Returns whether something is still animating.
+// see-through: the felt is the page's own. Returns whether something is still moving (lift, glide,
+// glow), so the caller asks for another frame.
 export const paintBoard = (paint: CanvasRenderingContext2D, scene: BoardScene | null, size: BoardSize, now: number): boolean => {
   const { pixelRatio: ratio } = size;
 
@@ -159,8 +192,10 @@ export const paintBoard = (paint: CanvasRenderingContext2D, scene: BoardScene | 
   paint.setTransform(ratio * zoom, 0, 0, ratio * zoom, ratio * x, ratio * y);
   paint.imageSmoothingEnabled = true;
   paint.imageSmoothingQuality = 'high';
-  scene.groups.forEach((group) => paintGroup(paint, scene, group, view));
-  paintOutlines(paint, scene, size);
+  const groups = scene.groups.map((group) => place(group, now));
 
-  return paintGlow(paint, scene, now);
+  groups.forEach((group) => paintGroup(paint, scene, group, view));
+  paintOutlines(paint, scene, groups, size);
+
+  return paintGlow(paint, scene, groups, now) || groups.some((group) => group.moving);
 };

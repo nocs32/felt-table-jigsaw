@@ -4,6 +4,24 @@ import type { BoardGroup, BoardShownGroup } from '../../../services/board-painte
 import type { PlayerColor } from '../types';
 import type { RoomPuzzleDragStore } from './drag';
 
+// How a group moves in this browser: yours rises while in hand and settles when let go; after the
+// server's answer it glides from where you let go to where the server put it (a snap).
+const motionOf = (group: BoardGroup, drag: RoomPuzzleDragStore): Pick<BoardShownGroup, 'lift' | 'slide'> => {
+  const { settle } = drag;
+
+  if (drag.isActive && group.id === drag.groupId) {
+    return drag.isDragging || !settle
+      ? { lift: { from: 0, to: 1, startedAt: drag.grabbedAt }, slide: null }
+      : { lift: { from: settle.height, to: 0, startedAt: settle.at }, slide: null };
+  }
+
+  if (settle?.groupId !== group.id) return { lift: null, slide: null };
+
+  const lift = { from: settle.height, to: 0, startedAt: settle.at };
+
+  return { lift, slide: settle.answeredAt === null ? null : { fromX: settle.x, fromY: settle.y, startedAt: settle.answeredAt } };
+};
+
 // The groups as this browser draws them: the server's, except the one in your hand, which is where
 // your pointer put it and on top. Groups others hold are outlined in their colour.
 export const showGroups = (
@@ -16,9 +34,13 @@ export const showGroups = (
 
   const rest = groups
     .filter((group) => group !== mine)
-    .map((group) => ({ ...group, lifted: false, outline: group.heldBy !== '' && group.heldBy !== sessionId ? colorOf(group.heldBy) : null }));
+    .map((group) => ({
+      ...group,
+      ...motionOf(group, drag),
+      outline: group.heldBy !== '' && group.heldBy !== sessionId ? colorOf(group.heldBy) : null,
+    }));
 
-  return mine ? [...rest, { ...mine, x: drag.x, y: drag.y, lifted: drag.isDragging, outline: null }] : rest;
+  return mine ? [...rest, { ...mine, x: drag.x, y: drag.y, ...motionOf(mine, drag), outline: null }] : rest;
 };
 
 // The top group with a piece under the table point, if any.

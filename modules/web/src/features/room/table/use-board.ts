@@ -22,7 +22,14 @@ const listenToPointers = (canvas: HTMLCanvasElement, pointer: RoomPuzzlePointerS
 
     if (isMouse && event.button !== leftButton && event.button !== middleButton) return;
 
-    canvas.setPointerCapture(event.pointerId);
+    // Keeps the moves coming while the pointer is outside the canvas. It throws for a pointer the
+    // browser no longer counts as active, which must not stop the press.
+    try {
+      canvas.setPointerCapture(event.pointerId);
+    } catch {
+      // Dragging still works inside the canvas.
+    }
+
     pointer.down(event.pointerId, local(event).x, local(event).y, !isMouse || event.button === leftButton);
   };
 
