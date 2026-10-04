@@ -1,0 +1,65 @@
+import { defineTokens } from '@pandacss/dev';
+
+export const tokens = defineTokens({
+  fonts: {
+    body: { value: 'Lato, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif' },
+    mono: { value: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace' },
+    emoji: { value: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' },
+  },
+  colors: {
+    aubergine: {
+      950: { value: '#2C0A2D' },
+      900: { value: '#350D36' },
+      800: { value: '#3F0E40' },
+      700: { value: '#4A154B' },
+    },
+    night: {
+      950: { value: '#121016' },
+      900: { value: '#19171D' },
+      800: { value: '#1A1D21' },
+      700: { value: '#222529' },
+      600: { value: '#35373B' },
+      500: { value: '#565856' },
+    },
+    ink: {
+      900: { value: '#1D1C1D' },
+      600: { value: '#616061' },
+      300: { value: '#DDDDDD' },
+      100: { value: '#F8F8F8' },
+    },
+    brand: {
+      green: { value: '#007A5A' },
+      greenHover: { value: '#148567' },
+      blue: { value: '#1264A3' },
+      blueActive: { value: '#1164A3' },
+      sky: { value: '#1D9BD1' },
+      skyTint: { value: '#E8F5FA' },
+      red: { value: '#E01E5A' },
+      online: { value: '#2BAC76' },
+      mustard: { value: '#ECB22E' },
+    },
+    player: {
+      raspberry: { value: '#E01E5A' },
+      sky: { value: '#1D9BD1' },
+      green: { value: '#2EB67D' },
+      mustard: { value: '#ECB22E' },
+      violet: { value: '#8E5BD9' },
+      orange: { value: '#F2711C' },
+      teal: { value: '#0FA3A3' },
+      pink: { value: '#E255A1' },
+      lime: { value: '#7CB342' },
+      indigo: { value: '#4F6BED' },
+    },
+    table: {
+      feltGreen: { value: '#1E3C36' },
+      feltNavy: { value: '#1C2B45' },
+      feltBurgundy: { value: '#4A1E2A' },
+      feltCharcoal: { value: '#2A2D31' },
+      walnut: { value: '#4E321F' },
+      oak: { value: '#A77B4F' },
+      cork: { value: '#B98E5E' },
+      slate: { value: '#3D4650' },
+      linen: { value: '#D9CFBF' },
+    },
+  },
+});

@@ -1,10 +1,17 @@
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
 const coreApiUrl = 'http://localhost:2567';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), svgr()],
+  resolve: {
+    alias: {
+      'styled-system': fileURLToPath(new URL('./styled-system', import.meta.url)),
+    },
+  },
   server: {
     port: 5173,
     proxy: { '/api': coreApiUrl },

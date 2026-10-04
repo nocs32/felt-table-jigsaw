@@ -1,4 +1,5 @@
 packages:
   - modules/*
 allowBuilds:
+  '@parcel/watcher': true
   esbuild: true
