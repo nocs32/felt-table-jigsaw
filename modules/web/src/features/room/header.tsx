@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 import type { ReactElement } from 'react';
-import { EdgesIcon, FitIcon, HashIcon, ImageIcon } from '../../assets';
+import { EdgesIcon, FitIcon, HashIcon, ImageIcon, PlusIcon } from '../../assets';
 import { useRootStore } from '../../stores/use-root-store';
-import { IconButton, NameInput } from '../../ui';
+import { Button, IconButton, NameInput } from '../../ui';
 import { RoomHeaderDivider, RoomHeaderName, RoomHeaderRoot, RoomHeaderSummary, RoomHeaderTitle, RoomHeaderTools } from './styled-components';
 
 // Slack's channel header: the table name (click to rename), a one-line summary and the table tools.
 export const RoomHeader = observer(function RoomHeader(): ReactElement {
-  const { locale, room, ui } = useRootStore();
+  const { locale, newPuzzle, room, ui } = useRootStore();
   const { t } = locale;
   const { widgets } = ui;
 
@@ -21,10 +21,10 @@ export const RoomHeader = observer(function RoomHeader(): ReactElement {
       </RoomHeaderTitle>
       <RoomHeaderSummary>{room.puzzle.summary}</RoomHeaderSummary>
       <RoomHeaderTools>
-        <IconButton type="button" disabled={room.puzzle.isEmpty} aria-label={t('header.fit')} title={t('header.fit')}>
+        <IconButton type="button" disabled={!room.puzzle.isReady} aria-label={t('header.fit')} title={t('header.fit')} onClick={room.puzzle.camera.fit}>
           <FitIcon />
         </IconButton>
-        <IconButton type="button" disabled={room.puzzle.isEmpty} aria-label={t('header.edges')} title={t('header.edges')}>
+        <IconButton type="button" disabled={!room.puzzle.isReady} aria-label={t('header.edges')} title={t('header.edges')} onClick={room.puzzle.arrangeEdges}>
           <EdgesIcon />
         </IconButton>
         <RoomHeaderDivider />
@@ -38,6 +38,11 @@ export const RoomHeader = observer(function RoomHeader(): ReactElement {
         >
           <ImageIcon />
         </IconButton>
+        <RoomHeaderDivider />
+        <Button type="button" size="sm" onClick={newPuzzle.open}>
+          <PlusIcon />
+          {t('header.newPuzzle')}
+        </Button>
       </RoomHeaderTools>
     </RoomHeaderRoot>
   );

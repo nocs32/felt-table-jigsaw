@@ -8,6 +8,7 @@ export { default as CheckIcon } from './check.svg?react';
 export { default as ChevronDownIcon } from './chevron-down.svg?react';
 export { default as CloseIcon } from './close.svg?react';
 export { default as CopyIcon } from './copy.svg?react';
+export { default as CursorIcon } from './cursor.svg?react';
 export { default as DicesIcon } from './dices.svg?react';
 export { default as EdgesIcon } from './edges.svg?react';
 export { default as ExternalLinkIcon } from './external-link.svg?react';

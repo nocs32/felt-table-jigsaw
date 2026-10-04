@@ -65,6 +65,15 @@ const readList = (json: unknown, endpoint: string): UnsplashApiPhoto[] => {
   return json.filter(isApiPhoto);
 };
 
+// /photos/:id answers with one photo.
+const readPhoto = (json: unknown, endpoint: string): UnsplashApiPhoto => {
+  if (!isApiPhoto(json)) {
+    throw unexpectedShape(endpoint);
+  }
+
+  return json;
+};
+
 // /search/photos answers with { total, total_pages, results }.
 const readSearch = (json: unknown): UnsplashApiSearch => {
   if (!isRecord(json) || !Array.isArray(json.results) || typeof json.total_pages !== 'number') {
@@ -75,4 +84,4 @@ const readSearch = (json: unknown): UnsplashApiSearch => {
 };
 
 // Raw Unsplash API JSON → the shapes in @felt-table/protocol.
-export const unsplashMapper = { toPhoto, readList, readSearch };
+export const unsplashMapper = { toPhoto, readList, readPhoto, readSearch };

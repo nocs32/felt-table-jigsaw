@@ -1,11 +1,26 @@
 import { createAddress } from './address';
+import { createPathHit } from './path-hit';
+import { createPieceArt } from './piece-art';
+import { createPictureLoader } from './picture-loader';
+import { createPicturesApi } from './pictures-api';
 import { createPreferences } from './preferences';
+import { createSamples } from './samples';
 import { createTableClient } from './table-client';
 import { createTranslator } from './translator';
 import type { Schedule, Services } from './types';
 
 export type {
   AddressService,
+  ApiResult,
+  PieceArt,
+  PieceArtJob,
+  PathHitService,
+  PieceArtService,
+  PieceSprite,
+  PictureLoaderService,
+  PictureToLoad,
+  PicturesApiService,
+  SamplesService,
   ClipboardService,
   PreferencesService,
   Schedule,
@@ -33,18 +48,28 @@ const repeat: Schedule = (callback, intervalMs) => {
   return () => window.clearInterval(timer);
 };
 
-export const createServices = (): Services => ({
-  preferences: createPreferences(),
-  clipboard: { writeText: (text) => navigator.clipboard.writeText(text) },
-  translator: createTranslator(),
-  tableClient: createTableClient(window.location.origin),
-  address: createAddress(),
-  schedule,
-  repeat,
-  random: Math.random,
-  now: Date.now,
-  createId: () => crypto.randomUUID(),
-  origin: window.location.origin,
-  browserLanguage: navigator.language,
-  isWideLayout: window.matchMedia(wideLayoutQuery).matches,
-});
+export const createServices = (): Services => {
+  const samples = createSamples();
+
+  return {
+    preferences: createPreferences(),
+    clipboard: { writeText: (text) => navigator.clipboard.writeText(text) },
+    translator: createTranslator(),
+    tableClient: createTableClient(window.location.origin),
+    address: createAddress(),
+    picturesApi: createPicturesApi(),
+    samples,
+    pictureLoader: createPictureLoader(samples),
+    pieceArt: createPieceArt(),
+    isInPath: createPathHit(),
+    pixelRatio: () => Math.min(window.devicePixelRatio || 1, 2),
+    schedule,
+    repeat,
+    random: Math.random,
+    now: Date.now,
+    createId: () => crypto.randomUUID(),
+    origin: window.location.origin,
+    browserLanguages: navigator.languages.length > 0 ? navigator.languages : [navigator.language],
+    isWideLayout: window.matchMedia(wideLayoutQuery).matches,
+  };
+};

@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import type { Language, TranslationKey, TranslationValues } from '../i18n';
+import { languages, type Language, type TranslationKey, type TranslationValues } from '../i18n';
 import type { PreferencesService, TranslatorService } from '../services';
 
 export type Translate = (key: TranslationKey, values?: TranslationValues) => string;
@@ -13,12 +13,17 @@ export interface Localizer {
 export interface LocaleDeps {
   preferences: PreferencesService;
   translator: TranslatorService;
-  browserLanguage: string;
+  // The browser's languages, most preferred first (navigator.languages).
+  browserLanguages: readonly string[];
 }
 
-const detect = (browserLanguage: string): Language => (browserLanguage.toLowerCase().startsWith('uk') ? 'uk' : 'en');
+const toLanguage = (tag: string): Language | undefined => languages.find((language) => tag.toLowerCase().split('-')[0] === language);
 
-// The UI language (en ⇄ uk): saved choice first, then the browser's language.
+// The first of the browser's languages we have, else English: ['ru-RU', 'uk', 'en'] gives Ukrainian.
+const detect = (browserLanguages: readonly string[]): Language =>
+  browserLanguages.map(toLanguage).find((language) => language !== undefined) ?? 'en';
+
+// The UI language (en ⇄ uk): your saved choice (the EN/UA button) first, then the browser's languages.
 // Every computed label calls `t`, so it re-computes when the language changes.
 export class LocaleStore implements Localizer {
   language: Language;
@@ -26,7 +31,7 @@ export class LocaleStore implements Localizer {
 
   constructor(deps: LocaleDeps) {
     this.#deps = deps;
-    this.language = deps.preferences.loadLanguage() ?? detect(deps.browserLanguage);
+    this.language = deps.preferences.loadLanguage() ?? detect(deps.browserLanguages);
     makeAutoObservable(this, { t: false, formatTime: false }, { autoBind: true });
   }
 

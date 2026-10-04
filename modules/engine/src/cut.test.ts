@@ -50,9 +50,10 @@ test('wild and classic shapes differ for the same seed', () => {
 });
 
 test('picture and cell sizes follow the aspect (long edge 1000)', () => {
-  expect([wild.width, wild.height, wild.cols, wild.rows]).toEqual([1000, 1000 / 1.5, 9, 7]);
+  // The height is rounded to the geometry's 1/16-unit grid: 666.67 becomes 666.6875.
+  expect([wild.width, wild.height, wild.cols, wild.rows]).toEqual([1000, 666.6875, 9, 7]);
   expect(wild.cellWidth).toBeCloseTo(1000 / 9);
-  expect(wild.cellHeight).toBeCloseTo(1000 / 1.5 / 7);
+  expect(wild.cellHeight).toBeCloseTo(666.6875 / 7);
   expect(wild.pieceSize).toBe(Math.min(wild.cellWidth, wild.cellHeight));
   expect([classic.width, classic.height, classic.cols, classic.rows]).toEqual([750, 1000, 6, 8]);
   expect(classic.pieceSize).toBe(125);

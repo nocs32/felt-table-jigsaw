@@ -1,4 +1,4 @@
-import { unsplashTopics } from '@felt-table/protocol';
+import { unsplashPhotoIdPattern, unsplashTopics } from '@felt-table/protocol';
 import * as v from 'valibot';
 import { limits } from '../../limits.js';
 
@@ -29,5 +29,5 @@ export const unsplashSearchQuerySchema = v.strictObject({
 });
 
 export const unsplashPhotoParamsSchema = v.strictObject({
-  id: v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,32}$/, 'Invalid photo id')),
+  id: v.pipe(v.string(), v.regex(unsplashPhotoIdPattern, 'Invalid photo id')),
 });

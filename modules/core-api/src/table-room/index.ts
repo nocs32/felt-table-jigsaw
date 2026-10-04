@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { ErrorCode, Room, ServerError, type Client } from '@colyseus/core';
 import {
+  formatPuzzleFeedText,
   tableJoinOptionsSchema,
   tableMessageSchemas,
   tableProtocolVersion,
@@ -13,16 +14,27 @@ import {
 import { TableState } from '@felt-table/protocol/state';
 import { customAlphabet } from 'nanoid';
 import * as v from 'valibot';
+import { describeError } from '../errors/index.js';
 import { limits } from '../limits.js';
 import { logger } from '../logger.js';
 import { TableRoomError } from './error.js';
 import { TableRoomFeed, type TableRoomFeedSystemKind } from './feed.js';
 import { TableRoomLifecycle } from './lifecycle.js';
 import { TableRoomMembers } from './members.js';
+import { unavailableTablePictures, type TableRoomPictures } from './pictures.js';
+import { TableRoomPuzzle } from './puzzle.js';
 import { TableRoomRateLimits } from './rate-limits.js';
 import { TableRoomSettings } from './settings.js';
 
 export type TableClient = Client<{ messages: TableEvents }>;
+
+// Given once in `server.define(tableRoomName, TableRoom, options)`. Colyseus merges these over
+// the browser's create options, so a browser can't replace them.
+export interface TableRoomOptions {
+  pictures: TableRoomPictures;
+}
+
+type TableRoomHandler<K extends TableMessageType> = (client: TableClient, message: TableMessages[K]) => void | Promise<void>;
 
 const { table } = limits;
 
@@ -54,7 +66,9 @@ export class TableRoom extends Room<{ state: TableState; client: TableClient }> 
   readonly #members = new TableRoomMembers(this.state.members, Math.random);
   readonly #feed = new TableRoomFeed(this.state.feed, { now: Date.now, createId: randomUUID, maxItems: table.feedMaxItems });
   readonly #settings = new TableRoomSettings(this.state, Math.random);
+  readonly #puzzle = new TableRoomPuzzle(this.state, { now: Date.now, createId: randomUUID, random: Math.random });
   readonly #rateLimits = new TableRoomRateLimits(table.rates, Date.now);
+  #pictures = unavailableTablePictures;
   readonly #lifecycle = new TableRoomLifecycle({
     schedule: (callback, delayMs) => {
       const delayed = this.clock.setTimeout(callback, delayMs);
@@ -65,8 +79,9 @@ export class TableRoom extends Room<{ state: TableState; client: TableClient }> 
     close: () => void this.disconnect(),
   });
 
-  override onCreate(): void {
+  override onCreate(options: TableRoomOptions): void {
     this.roomId = createRoomId();
+    this.#pictures = options.pictures;
     this.#listen();
     this.#lifecycle.open();
     logger.info('table created', { roomId: this.roomId });
@@ -81,9 +96,11 @@ export class TableRoom extends Room<{ state: TableState; client: TableClient }> 
     logger.info('table joined', { roomId: this.roomId, sessionId: client.sessionId, people: this.#members.count });
   }
 
-  // A lost connection keeps its seat for a while; the browser reconnects on its own.
+  // A lost connection keeps its seat for a while; the browser reconnects on its own. What they
+  // held is let go, and their cursor goes.
   override onDrop(client: TableClient): void {
     this.#members.drop(client.sessionId);
+    this.#letGo(client);
     this.allowReconnection(client, table.reconnectSeconds);
   }
 
@@ -96,12 +113,17 @@ export class TableRoom extends Room<{ state: TableState; client: TableClient }> 
 
     const author = this.#members.leave(client.sessionId);
 
+    this.#letGo(client);
     this.#rateLimits.forget(client.sessionId);
     this.#feed.announce(author, 'left');
     this.#lifecycle.leave(this.#members.count);
   }
 
   override onDispose(): void {
+    const { picture } = this.#puzzle;
+
+    if (picture) this.#pictures.release(picture);
+
     this.#lifecycle.dispose();
     this.#rateLimits.dispose();
     logger.info('table closed', { roomId: this.roomId });
@@ -113,11 +135,38 @@ export class TableRoom extends Room<{ state: TableState; client: TableClient }> 
     this.#on('setBackground', (client, { value }) => this.#announce(client, 'background', this.#settings.setBackground(value)));
     this.#on('renameRoom', (client, { name }) => this.#announce(client, 'renamed', this.#settings.rename(name)));
     this.#on('updateProfile', (client, { name }) => this.#renameMember(client, name));
+    this.#on('newPuzzle', (client, message) => this.#startPuzzle(client, message));
+    this.#on('needGeometry', (client) => client.send('geometry', this.#puzzle.geometry()));
+    this.#on('arrange', () => this.#puzzle.arrangeEdges());
+    this.#on('grab', (client, { group }) => this.#puzzle.grab(client.sessionId, group));
+    this.#on('move', (client, { group, x, y }) => this.#puzzle.move(client.sessionId, group, x, y));
+    this.#on('drop', (client, message) => this.#drop(client, message));
+    this.#on('cursor', (client, position) => this.broadcast('cursor', { sessionId: client.sessionId, position }, { except: client }));
+  }
+
+  // The server decides what snaps; everyone sees the glow, and the last piece finishes the puzzle.
+  #drop(client: TableClient, { group, x, y }: TableMessages['drop']): void {
+    const dropped = this.#puzzle.drop(client.sessionId, group, x, y);
+
+    if (dropped.joins > 0) {
+      this.#members.credit(client.sessionId, dropped.joins);
+      this.broadcast('snapped', { sessionId: client.sessionId, pieces: dropped.joinedPieces });
+    }
+
+    if (dropped.finishedAfter !== null) {
+      this.#feed.announce(this.#members.author(client.sessionId), 'finished', `${dropped.finishedAfter}`);
+      logger.info('puzzle finished', { roomId: this.roomId, afterMs: dropped.finishedAfter });
+    }
+  }
+
+  #letGo(client: TableClient): void {
+    this.#puzzle.release(client.sessionId);
+    this.broadcast('cursor', { sessionId: client.sessionId, position: null }, { except: client });
   }
 
   // Every handler: validate the message, check the sender's rate, then call the part that owns it.
   // Anything refused goes back to the sender as an `error` event; nobody gets disconnected for it.
-  #on<K extends TableMessageType>(type: K, handle: (client: TableClient, message: TableMessages[K]) => void): void {
+  #on<K extends TableMessageType>(type: K, handle: TableRoomHandler<K>): void {
     this.onMessage(type, (client: TableClient, input: unknown) => {
       const result = v.safeParse(tableMessageSchemas[type], input);
 
@@ -126,13 +175,38 @@ export class TableRoom extends Room<{ state: TableState; client: TableClient }> 
       if (!this.#rateLimits.allow(client.sessionId, type)) return this.#refuse(client, type, 'RATE_LIMITED');
 
       try {
-        handle(client, result.output as TableMessages[K]);
+        handle(client, result.output as TableMessages[K])?.catch((error: unknown) => this.#fail(client, type, error));
       } catch (error) {
         if (!(error instanceof TableRoomError)) throw error;
 
         this.#refuse(client, type, error.code);
       }
     });
+  }
+
+  // A handler that finished later (it had to look something up) and failed.
+  #fail(client: TableClient, type: TableMessageType, error: unknown): void {
+    if (error instanceof TableRoomError) {
+      this.#refuse(client, type, error.code);
+    } else {
+      logger.error('table message failed', { roomId: this.roomId, sessionId: client.sessionId, type, error: describeError(error) });
+    }
+  }
+
+  // The picture is looked up first (it may take a moment); then everyone gets the new cut at once.
+  async #startPuzzle(client: TableClient, { picture, ...cut }: TableMessages['newPuzzle']): Promise<void> {
+    const author = this.#members.author(client.sessionId);
+    const shown = await this.#pictures.resolve(picture);
+    const started = this.#puzzle.start({ picture: shown, ...cut });
+
+    this.#pictures.keep(shown);
+    this.#members.resetJoins();
+
+    if (started.replacedPicture) this.#pictures.release(started.replacedPicture);
+
+    this.broadcast('geometry', started.geometry);
+    this.#feed.announce(author, 'puzzle', formatPuzzleFeedText(started.pieces, started.replacedPercent));
+    logger.info('puzzle started', { roomId: this.roomId, sessionId: client.sessionId, pieces: started.pieces });
   }
 
   #renameMember(client: TableClient, text: string): void {

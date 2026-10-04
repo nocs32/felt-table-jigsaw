@@ -2,7 +2,7 @@ import type { UnsplashPhoto, UnsplashPhotoPage, UnsplashStatus, UnsplashTopic } 
 import { limits } from '../../limits.js';
 import type { UnsplashClient, UnsplashClientQuery } from '../client/index.js';
 import { unsplashMapper, type UnsplashApiPhoto } from '../mapper.js';
-import { UnsplashServiceDownloads } from './downloads.js';
+import { UnsplashServicePhotos } from './photos.js';
 
 export type UnsplashSearchOrientation = 'landscape' | 'any';
 
@@ -23,7 +23,7 @@ export class UnsplashService {
 
   private readonly collectionId: string | null;
 
-  private readonly downloads = new UnsplashServiceDownloads(limits.unsplash.downloadLocationsMax);
+  private readonly photos = new UnsplashServicePhotos(limits.unsplash.photosRemembered);
 
   constructor(client: UnsplashClient, collectionId: string | null) {
     this.client = client;
@@ -62,13 +62,26 @@ export class UnsplashService {
     return { photos: this.toPhotos(result.photos), page: input.page, hasMore: input.page < result.totalPages };
   }
 
+  // One photo, for starting a puzzle: usually one the picker was just shown, else asked from Unsplash.
+  async photo(photoId: string): Promise<UnsplashPhoto> {
+    const known = this.photos.get(photoId);
+
+    if (known !== undefined) {
+      return known.photo;
+    }
+
+    const path = `/photos/${encodeURIComponent(photoId)}`;
+
+    return this.remember(unsplashMapper.readPhoto(await this.client.getJson(path, {}), path));
+  }
+
   // Unsplash API guideline: when a user picks a photo, hit its download_location once.
   async use(photoId: string): Promise<void> {
-    await this.client.ping(this.downloads.locationOf(photoId) ?? `/photos/${encodeURIComponent(photoId)}/download`);
+    await this.client.ping(this.photos.get(photoId)?.downloadLocation ?? `/photos/${encodeURIComponent(photoId)}/download`);
   }
 
   dispose(): void {
-    this.downloads.dispose();
+    this.photos.dispose();
     this.client.dispose();
   }
 
@@ -80,10 +93,14 @@ export class UnsplashService {
   }
 
   private toPhotos(rawPhotos: UnsplashApiPhoto[]): UnsplashPhoto[] {
-    return rawPhotos.map((rawPhoto) => {
-      this.downloads.remember(rawPhoto.id, rawPhoto.links.download_location);
+    return rawPhotos.map((rawPhoto) => this.remember(rawPhoto));
+  }
 
-      return unsplashMapper.toPhoto(rawPhoto);
-    });
+  private remember(rawPhoto: UnsplashApiPhoto): UnsplashPhoto {
+    const photo = unsplashMapper.toPhoto(rawPhoto);
+
+    this.photos.remember({ photo, downloadLocation: rawPhoto.links.download_location });
+
+    return photo;
   }
 }

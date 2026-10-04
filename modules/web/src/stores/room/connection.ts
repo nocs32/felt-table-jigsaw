@@ -1,4 +1,12 @@
-import type { TableMessages, TableMessageType, TableReactionEvent } from '@felt-table/protocol';
+import type {
+  TableCursorEvent,
+  TableErrorEvent,
+  TableGeometryEvent,
+  TableMessages,
+  TableMessageType,
+  TableReactionEvent,
+  TableSnappedEvent,
+} from '@felt-table/protocol';
 import type { TableSnapshot } from '@felt-table/protocol/state';
 import { makeAutoObservable } from 'mobx';
 import type { AddressService, PreferencesService, TableClientService, TableLink, TableOpenFailure, TableOpenResult } from '../../services';
@@ -16,6 +24,11 @@ export interface RoomConnectionDeps {
   // Every shared state change, starting with the first full state.
   receive: (snapshot: TableSnapshot) => void;
   receiveReaction: (event: TableReactionEvent) => void;
+  receiveGeometry: (event: TableGeometryEvent) => void;
+  receiveSnapped: (event: TableSnappedEvent) => void;
+  receiveCursor: (event: TableCursorEvent) => void;
+  // The server refused one of our messages.
+  receiveRefusal: (event: TableErrorEvent) => void;
 }
 
 const failures: readonly RoomConnectionState[] = ['gone', 'full', 'outdated', 'unreachable'];
@@ -113,6 +126,9 @@ export class RoomConnectionStore {
     link.listen({
       change: this.receive,
       reaction: this.#deps.receiveReaction,
+      geometry: this.#deps.receiveGeometry,
+      snapped: this.#deps.receiveSnapped,
+      cursor: this.#deps.receiveCursor,
       refused: this.refuse,
       drop: this.drop,
       reconnect: this.restore,
@@ -150,10 +166,11 @@ export class RoomConnectionStore {
     this.#enter();
   }
 
-  // A message the server refused. Nothing to show for it yet: optimistic values settle back
-  // on their own (RoomSyncedValueStore), and the composer is limited like the server.
-  refuse(): void {
+  // A message the server refused. Optimistic values settle back on their own (RoomSyncedValueStore)
+  // and the composer is limited like the server; the room passes on what needs showing.
+  refuse(event: TableErrorEvent): void {
     this.refusals += 1;
+    this.#deps.receiveRefusal(event);
   }
 
   send<K extends TableMessageType>(type: K, message: TableMessages[K]): void {

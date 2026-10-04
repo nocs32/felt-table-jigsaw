@@ -68,6 +68,9 @@ const toLink = (room: TableRoom): TableLink => ({
   listen: (listeners) => {
     room.onStateChange((state) => listeners.change(state.toJSON()));
     room.onMessage('reaction', listeners.reaction);
+    room.onMessage('geometry', listeners.geometry);
+    room.onMessage('snapped', listeners.snapped);
+    room.onMessage('cursor', listeners.cursor);
     room.onMessage('error', listeners.refused);
     room.onDrop(() => listeners.drop());
 
