@@ -25,7 +25,7 @@ export const RoomTableToolbarSwatches = observer(function RoomTableToolbarSwatch
           aria-label={option.label}
           title={option.label}
           selected={option.isSelected}
-          onClick={() => room.choosePreset(option.preset)}
+          onClick={() => background.choosePreset(option.preset)}
         >
           <RoomTableToolbarSwatchSurface surface={option.preset} />
         </RoomTableToolbarSwatch>
@@ -35,7 +35,7 @@ export const RoomTableToolbarSwatches = observer(function RoomTableToolbarSwatch
           type="color"
           aria-label={locale.t('table.custom')}
           value={background.colorValue}
-          onChange={(event) => room.chooseColor(event.target.value)}
+          onChange={(event) => background.chooseColor(event.target.value)}
         />
       </RoomTableToolbarColor>
     </RoomTableToolbarSwatchesRoot>

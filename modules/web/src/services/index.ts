@@ -1,8 +1,23 @@
+import { createAddress } from './address';
 import { createPreferences } from './preferences';
+import { createTableClient } from './table-client';
 import { createTranslator } from './translator';
 import type { Schedule, Services } from './types';
 
-export type { ClipboardService, PreferencesService, Schedule, Services, TranslatorService } from './types';
+export type {
+  AddressService,
+  ClipboardService,
+  PreferencesService,
+  Schedule,
+  Services,
+  TableAddress,
+  TableClientService,
+  TableLink,
+  TableLinkListeners,
+  TableOpenFailure,
+  TableOpenResult,
+  TranslatorService,
+} from './types';
 
 const wideLayoutQuery = '(min-width: 1024px)';
 
@@ -22,6 +37,8 @@ export const createServices = (): Services => ({
   preferences: createPreferences(),
   clipboard: { writeText: (text) => navigator.clipboard.writeText(text) },
   translator: createTranslator(),
+  tableClient: createTableClient(window.location.origin),
+  address: createAddress(),
   schedule,
   repeat,
   random: Math.random,

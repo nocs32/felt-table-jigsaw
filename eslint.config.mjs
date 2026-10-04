@@ -107,11 +107,28 @@ export default defineConfig([
         'error',
         {
           patterns: [
-            { group: ['node:*', 'react', 'react-*', 'mobx*', 'express', 'colyseus*'], message: pureModuleMessage },
+            { group: ['node:*', 'react', 'react-*', 'mobx*', 'express', 'colyseus*', '@colyseus/*'], message: pureModuleMessage },
           ],
         },
       ],
       'no-restricted-globals': ['error', 'window', 'document', 'navigator', 'localStorage', 'process', 'Buffer'],
+    },
+  },
+  {
+    // The protocol's state classes are Colyseus Schema (plain JS, runs anywhere); the rest of Colyseus stays out.
+    files: ['modules/protocol/src/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['node:*', 'react', 'react-*', 'mobx*', 'express', 'colyseus*', '@colyseus/*', '!@colyseus/schema'],
+              message: pureModuleMessage,
+            },
+          ],
+        },
+      ],
     },
   },
 ]);

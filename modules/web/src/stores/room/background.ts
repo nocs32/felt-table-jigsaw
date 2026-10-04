@@ -1,6 +1,10 @@
+import { defaultTableBackground, tableBackgroundPresets } from '@felt-table/protocol';
 import { makeAutoObservable } from 'mobx';
+import type { Schedule } from '../../services';
 import type { Translate } from '../locale';
-import { presetLabel, randomTableColor, tableBackgroundPresets } from './table-backgrounds';
+import { toBackground } from './snapshot';
+import { RoomSyncedValueStore } from './synced-value';
+import { presetLabel } from './table-backgrounds';
 import type { TableBackground, TableBackgroundPreset } from './types';
 
 export type TableSurfaceVariant = TableBackgroundPreset | 'custom';
@@ -11,19 +15,33 @@ export interface BackgroundOptionView {
   isSelected: boolean;
 }
 
-const customColorChance = 0.25;
+export interface RoomBackgroundDeps {
+  t: Translate;
+  schedule: Schedule;
+  // Asks the server for a new surface: a preset id, a #rrggbb colour or 'surprise'.
+  send: (value: string) => void;
+}
+
 const defaultCustomColor = '#2f5d55';
 
-// The shared table surface: a preset (felt, wood, …) or a custom colour.
-export class RoomBackgroundStore {
-  current: TableBackground = { kind: 'preset', preset: 'feltGreen' };
-  readonly #random: () => number;
-  readonly #t: Translate;
+// The colour picker fires on every move; only the colour it rests on is sent.
+const colorSendDelayMs = 250;
 
-  constructor(random: () => number, t: Translate) {
-    this.#random = random;
-    this.#t = t;
+// The shared table surface: a preset (felt, wood, …) or a custom colour. The server keeps it;
+// our own pick shows straight away.
+export class RoomBackgroundStore {
+  readonly #value: RoomSyncedValueStore;
+  readonly #deps: RoomBackgroundDeps;
+  #cancelColorSend: (() => void) | null = null;
+
+  constructor(deps: RoomBackgroundDeps) {
+    this.#deps = deps;
+    this.#value = new RoomSyncedValueStore(defaultTableBackground, deps);
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  get current(): TableBackground {
+    return toBackground(this.#value.value);
   }
 
   get preset(): TableBackgroundPreset | null {
@@ -50,31 +68,30 @@ export class RoomBackgroundStore {
   get options(): BackgroundOptionView[] {
     return tableBackgroundPresets.map((preset) => ({
       preset,
-      label: presetLabel(preset, this.#t),
+      label: presetLabel(preset, this.#deps.t),
       isSelected: preset === this.preset,
     }));
   }
 
+  receive(value: string): void {
+    this.#value.receive(value);
+  }
+
   choosePreset(preset: TableBackgroundPreset): void {
-    this.current = { kind: 'preset', preset };
+    this.#value.propose(preset);
+    this.#deps.send(preset);
   }
 
   chooseColor(color: string): void {
-    this.current = { kind: 'color', color };
+    const value = color.toLowerCase();
+
+    this.#value.propose(value);
+    this.#cancelColorSend?.();
+    this.#cancelColorSend = this.#deps.schedule(() => this.#deps.send(value), colorSendDelayMs);
   }
 
+  // The server picks, so everyone gets the same surprise.
   surprise(): void {
-    if (this.#random() < customColorChance) {
-      this.chooseColor(randomTableColor(this.#random));
-
-      return;
-    }
-
-    const others = tableBackgroundPresets.filter((preset) => preset !== this.preset);
-    const pick = others[Math.floor(this.#random() * others.length)];
-
-    if (pick) {
-      this.choosePreset(pick);
-    }
+    this.#deps.send('surprise');
   }
 }

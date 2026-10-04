@@ -90,3 +90,55 @@ export const RoomHeaderTools = styled('div', {
 export const RoomHeaderDivider = styled('span', {
   base: { width: '1px', height: '20px', marginInline: '6px', bg: 'border.default' },
 });
+
+// Instead of the table: joining, or why there's no table to show.
+export const RoomStatusRoot = styled('main', {
+  base: {
+    display: 'grid',
+    placeItems: 'center',
+    minHeight: '100dvh',
+    padding: '24px',
+    bg: 'chrome.app',
+    color: 'fg.default',
+  },
+});
+
+export const RoomStatusCard = styled('section', {
+  base: {
+    display: 'grid',
+    justifyItems: 'center',
+    gap: '12px',
+    width: '100%',
+    maxWidth: '400px',
+    paddingInline: '28px',
+    paddingBlock: '28px',
+    borderRadius: '14px',
+    border: '1px solid',
+    borderColor: 'chrome.border',
+    bg: 'bg.surface',
+    boxShadow: 'floating',
+    textAlign: 'center',
+    animation: 'dialogIn 0.25s ease-out',
+  },
+});
+
+export const RoomStatusLogo = styled('span', {
+  base: { display: 'inline-flex', marginBottom: '4px', '& svg': { width: '44px', height: '44px' } },
+});
+
+export const RoomStatusTitle = styled('h1', {
+  base: { fontSize: '20px', fontWeight: '900', letterSpacing: '-0.01em', textWrap: 'balance' },
+});
+
+export const RoomStatusText = styled('p', {
+  base: { marginBottom: '8px', fontSize: '15px', color: 'fg.muted', textWrap: 'balance' },
+});
+
+export const RoomStatusSpinner = styled('span', {
+  base: {
+    display: 'inline-flex',
+    color: 'accent.text',
+    '& svg': { width: '22px', height: '22px', animation: 'spin' },
+    _motionReduce: { '& svg': { animation: 'none' } },
+  },
+});

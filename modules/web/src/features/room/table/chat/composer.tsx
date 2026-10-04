@@ -15,7 +15,7 @@ export const RoomTableChatComposer = observer(function RoomTableChatComposer(): 
         value={feed.draft}
         placeholder={room.composerPlaceholder}
         aria-label={locale.t('chat.message')}
-        maxLength={500}
+        maxLength={feed.maxLength}
         onChange={(event) => feed.setDraft(event.target.value)}
       />
       <RoomTableChatComposerSend type="submit" disabled={feed.isDraftEmpty} ready={feed.canSend} aria-label={locale.t('chat.send')}>

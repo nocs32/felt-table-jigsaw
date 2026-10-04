@@ -30,6 +30,8 @@ export interface RoomReactionsDeps {
   schedule: Schedule;
   repeat: Schedule;
   t: Translate;
+  // Tells everyone else at the table.
+  send: (emoji: string) => void;
 }
 
 export const defaultQuickReactions: readonly string[] = ['👍', '🎉', '😂', '🔥', '👀', '🧩'];
@@ -41,6 +43,13 @@ const streamIntervalMs = 160;
 
 const pickFrom = <T>(items: readonly T[], random: () => number, fallback: T): T =>
   items[Math.floor(random() * items.length)] ?? fallback;
+
+// Each person's reactions rise in their own lane, so one person's stream stays together.
+const laneOf = (senderId: string): FlightLane => {
+  const hash = [...senderId].reduce((sum, char) => (sum * 31 + (char.codePointAt(0) ?? 0)) % 9973, 7);
+
+  return flightLanes[hash % flightLanes.length] ?? 'l5';
+};
 
 // Huddle-style reactions: emoji in flight, the quick bar of recent emoji,
 // and press-and-hold streaming (idle → holding → streaming → idle).
@@ -59,16 +68,15 @@ export class RoomReactionsStore {
     return this.quick.map((emoji, index) => ({ emoji, label: this.#deps.t('toolbar.react', { emoji, key: index + 1 }) }));
   }
 
-  fire(emoji: string, sender: string | null = null): void {
-    const flight: Flight = {
-      id: this.#deps.createId(),
-      emoji,
-      lane: pickFrom(flightLanes, this.#deps.random, 'l5'),
-      sway: pickFrom(flightSways, this.#deps.random, 'gentle'),
-      sender,
-    };
+  // Our own reaction: it flies here at once and goes to everyone else.
+  fire(emoji: string): void {
+    this.#launch(emoji, pickFrom(flightLanes, this.#deps.random, 'l5'), null);
+    this.#deps.send(emoji);
+  }
 
-    this.flights = [...this.flights, flight].slice(-maxFlights);
+  // Someone else's reaction, with their name on it.
+  receive(emoji: string, senderId: string, senderName: string): void {
+    this.#launch(emoji, laneOf(senderId), senderName);
   }
 
   land(id: string): void {
@@ -103,5 +111,11 @@ export class RoomReactionsStore {
   pick(emoji: string): void {
     this.fire(emoji);
     this.quick = [emoji, ...this.quick.filter((quickEmoji) => quickEmoji !== emoji)].slice(0, quickSize);
+  }
+
+  #launch(emoji: string, lane: FlightLane, sender: string | null): void {
+    const flight: Flight = { id: this.#deps.createId(), emoji, lane, sway: pickFrom(flightSways, this.#deps.random, 'gentle'), sender };
+
+    this.flights = [...this.flights, flight].slice(-maxFlights);
   }
 }

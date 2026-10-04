@@ -8,7 +8,9 @@ The full spec is in `.scratch/SPEC.md`. Read §0 "Decisions so far" before plann
 
 ## Layout
 - `modules/web` — frontend: Vite + React 19 + TypeScript. Panda CSS, MobX and Ark UI are added as features need them.
-- `modules/core-api` — backend: Node + Express 5. Colyseus is the decided live multiplayer layer, not installed yet. Frontend comes first.
+- `modules/core-api` — backend: Node + Express 5 + Colyseus 0.18 (live tables), one process on :2567.
+- `modules/protocol` — the shared contract: message schemas, error codes, name rules; the Colyseus state classes under `@felt-table/protocol/state`.
+- `modules/engine` — pure puzzle maths (cutting, scatter, snap), shared by both apps.
 - `eslint.config.mjs` + `eslint-rules/` — the house lint rules for every module.
 - `.scratch/` — spec and notes, ignored by git. `.scratch/prototype.html` is the old single-file demo: the reference for porting the cutting and snapping code.
 
@@ -28,11 +30,14 @@ The full spec is in `.scratch/SPEC.md`. Read §0 "Decisions so far" before plann
 ## Commands
 ```bash
 pnpm install
-pnpm dev           # web on http://localhost:5173 + core-api on :2567 (Vite forwards /api)
+pnpm dev           # web on http://localhost:5173 + core-api on :2567 (Vite forwards /api, and /live for tables)
 pnpm lint          # add --fix to auto-fix spacing
 pnpm typecheck
+pnpm --filter @felt-table/core-api test   # also: @felt-table/engine
 ```
 
 ## Gotchas
 - **TypeScript is pinned to 6.0.** typescript-eslint doesn't support TypeScript 7 yet. Don't upgrade it.
 - **pnpm workspaces:** the packages are listed in `pnpm-workspace.yaml`. Add a dependency with `pnpm --filter @felt-table/<module> add <pkg>`.
+- **pnpm's release-age guard:** pnpm refuses versions published in the last day. Pick the previous version instead of adding exceptions.
+- **Testing multiplayer:** `/` creates a table and redirects to `/r/:id`; open that link in a second tab to be a second person. Each tab keeps its seat across reloads (sessionStorage).

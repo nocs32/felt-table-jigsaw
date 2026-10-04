@@ -20,6 +20,7 @@ const store = createRootStore();
 
 syncDocumentLanguage(store.locale);
 startKeyboardShortcuts(store);
+store.room.connection.open();
 
 createRoot(rootElement).render(
   <StrictMode>

@@ -6,7 +6,8 @@ export type ShareState = 'idle' | 'copied' | 'failed';
 
 export interface RoomShareDeps {
   origin: string;
-  roomId: string;
+  // Known once the table is open.
+  roomId: () => string | null;
   clipboard: ClipboardService;
   schedule: Schedule;
   t: Translate;
@@ -17,20 +18,28 @@ const resetAfterMs = 2000;
 // The room link and the copy-to-clipboard state machine: idle → copied | failed → idle.
 export class RoomShareStore {
   state: ShareState = 'idle';
-  readonly link: string;
-  readonly linkLabel: string;
+  readonly #origin: string;
+  readonly #roomId: () => string | null;
   readonly #clipboard: ClipboardService;
   readonly #schedule: Schedule;
   readonly #t: Translate;
   #cancelReset: (() => void) | null = null;
 
   constructor({ origin, roomId, clipboard, schedule, t }: RoomShareDeps) {
-    this.link = `${origin}/r/${roomId}`;
-    this.linkLabel = `${new URL(origin).host}/r/${roomId}`;
+    this.#origin = origin;
+    this.#roomId = roomId;
     this.#clipboard = clipboard;
     this.#schedule = schedule;
     this.#t = t;
-    makeAutoObservable(this, { link: false, linkLabel: false }, { autoBind: true });
+    makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  get link(): string {
+    return `${this.#origin}/r/${this.#roomId() ?? ''}`;
+  }
+
+  get linkLabel(): string {
+    return `${new URL(this.#origin).host}/r/${this.#roomId() ?? ''}`;
   }
 
   get isCopied(): boolean {

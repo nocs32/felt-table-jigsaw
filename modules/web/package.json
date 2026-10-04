@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ark-ui/react": "^5.39.2",
+    "@colyseus/sdk": "^0.18.4",
     "@felt-table/engine": "workspace:*",
     "@felt-table/protocol": "workspace:*",
     "@fontsource/lato": "^5.3.0",

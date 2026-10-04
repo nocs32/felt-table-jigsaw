@@ -34,6 +34,26 @@ export const RoomTopBarBrand = styled('div', {
   },
 });
 
+// While the connection is down and the client is getting back in.
+export const RoomTopBarReconnecting = styled('span', {
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    height: '24px',
+    paddingInline: '8px',
+    borderRadius: 'full',
+    bg: 'accent.tint',
+    color: 'accent.text',
+    fontSize: '12px',
+    fontWeight: '700',
+    whiteSpace: 'nowrap',
+    animation: 'fadeIn 0.2s ease-out',
+    '& svg': { width: '12px', height: '12px', animation: 'spin' },
+    _motionReduce: { '& svg': { animation: 'none' } },
+  },
+});
+
 export const RoomTopBarLanguage = styled('button', {
   base: {
     display: 'inline-flex',
