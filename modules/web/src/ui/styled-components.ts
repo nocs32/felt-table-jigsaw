@@ -52,7 +52,7 @@ export const AvatarPresence = styled('span', {
   variants: {
     status: {
       online: { bg: 'presence.online' },
-      away: { bg: 'bg.surface', boxShadow: 'inset 0 0 0 1.5px {colors.fg.muted}' },
+      reconnecting: { bg: 'bg.surface', boxShadow: 'inset 0 0 0 1.5px {colors.fg.muted}' },
     },
   },
 });

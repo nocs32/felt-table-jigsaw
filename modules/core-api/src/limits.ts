@@ -18,4 +18,24 @@ export const limits = {
     // Log a warning when Unsplash reports fewer requests left this hour.
     rateLimitWarnBelow: 10,
   },
+  table: {
+    // People at one table (spec §5.4). Seats held for reconnecting people count too.
+    maxClients: 12,
+    // An empty table is kept this long, then thrown away (spec §4.6).
+    emptyGraceMs: 10 * 60 * 1000,
+    // A dropped connection keeps its seat this long.
+    reconnectSeconds: 20,
+    // Feed items kept; the oldest go first.
+    feedMaxItems: 200,
+    // Hard cap on messages from one connection; Colyseus disconnects anyone above it.
+    maxMessagesPerSecond: 40,
+    // Per person and message type: at most `count` in any `windowMs`. Extra messages are refused.
+    rates: {
+      chat: { count: 5, windowMs: 5000 },
+      react: { count: 8, windowMs: 1000 },
+      setBackground: { count: 10, windowMs: 5000 },
+      renameRoom: { count: 10, windowMs: 10_000 },
+      updateProfile: { count: 10, windowMs: 10_000 },
+    },
+  },
 } as const;

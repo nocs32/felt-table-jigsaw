@@ -5,13 +5,15 @@ paths:
 
 # Core API rules (`modules/core-api`)
 
-Node + Express 5 for HTTP, and Colyseus for the live multiplayer rooms (decided, not installed yet). These rules come on top of the lint rules in `eslint.config.mjs` and follow the same ideas as the web rules: thin edges, small named units, and logic in small state machines.
+Node + Express 5 for HTTP, and Colyseus 0.18 for the live multiplayer rooms. These rules come on top of the lint rules in `eslint.config.mjs` and follow the same ideas as the web rules: thin edges, small named units, and logic in small state machines.
 
-**Colyseus specifics, once it's added:**
-- Room classes extend Colyseus `Room`.
-- Shared state is Colyseus Schema classes from the shared protocol module.
-- `onMessage` handlers follow rule 3: validate, call one method, done.
-- Schema decorators need `experimentalDecorators: true` and `useDefineForClassFields: false` in core-api's tsconfig.
+**Colyseus specifics:**
+- One process serves both: `new Server({ transport: new WebSocketTransport(), express: (app) => … })` in `src/index.ts`. Colyseus answers `/matchmake/*` and the WebSocket upgrades; everything else falls through to Express. No Redis (one process, D10).
+- Room classes extend Colyseus `Room<{ state; client }>`. Class fields like `maxClients`, `autoDispose` and `state` are fine (Colyseus re-installs its accessors in `__init`).
+- Shared state is the Schema classes in `@felt-table/protocol/state`, written as `class X extends schema({ … }, 'X') {}`. No decorators, so no `experimentalDecorators`.
+- Message handlers follow rule 3 through the room's `#on(type, handle)`: valibot schema from the protocol, then the rate limit, then one call. Don't pass a schema to Colyseus's own `onMessage`/`validate`: a failed check there disconnects the sender. Refusals go back as an `error` event (`{ code }`).
+- Join options are checked in `onJoin`; a refused join throws `ServerError` with the typed code as its message.
+- Tests: unit tests per part (`*.test.ts` next to it) and a room test through a real server with `@colyseus/testing` (`table-room/index.test.ts`). Run `pnpm --filter @felt-table/core-api test`.
 
 ## 1. Names follow the owner
 A unit that belongs to another starts with its owner's name:
@@ -62,7 +64,8 @@ No game rules, storage or calculations inside handlers.
 - **Logs:** log through `src/logger.ts` with context such as `roomId` and `sessionId`. No `console.log` anywhere else.
 
 ## 8. One shared contract
-- Message types, schemas and error codes live in the shared module that both apps import (planned). Never redefine them in core-api.
+- Message types, schemas, error codes and name rules live in `@felt-table/protocol`; the state classes in `@felt-table/protocol/state`. Both apps import them. Never redefine them in core-api.
+- Changing the state or a message's shape bumps `tableProtocolVersion`.
 
 ## Folder example
 ```
@@ -77,8 +80,11 @@ src/
 │  ├─ images-upload-handler.ts
 │  └─ image-store.ts
 └─ table-room/
-   ├─ index.ts                TableRoom
-   ├─ holds.ts                TableRoomHolds
+   ├─ index.ts                TableRoom: wires the parts to Colyseus
+   ├─ members.ts              TableRoomMembers
    ├─ feed.ts                 TableRoomFeed
-   └─ lifecycle.ts            TableRoomLifecycle
+   ├─ settings.ts             TableRoomSettings (name, surface)
+   ├─ rate-limits.ts          TableRoomRateLimits
+   ├─ lifecycle.ts            TableRoomLifecycle
+   └─ *.test.ts
 ```

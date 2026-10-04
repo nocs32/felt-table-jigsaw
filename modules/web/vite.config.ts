@@ -5,6 +5,14 @@ import { defineConfig } from 'vite';
 
 const coreApiUrl = 'http://localhost:2567';
 
+// Live tables: the Colyseus client talks to /live (matchmaking over HTTP, then a WebSocket);
+// core-api serves those routes at its root.
+const liveProxy = {
+  target: coreApiUrl,
+  ws: true,
+  rewrite: (path: string): string => path.replace(/^\/live/u, ''),
+};
+
 export default defineConfig({
   plugins: [react(), svgr()],
   resolve: {
@@ -14,6 +22,6 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    proxy: { '/api': coreApiUrl },
+    proxy: { '/api': coreApiUrl, '/live': liveProxy },
   },
 });

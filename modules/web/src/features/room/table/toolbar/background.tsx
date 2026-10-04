@@ -30,7 +30,7 @@ export const RoomTableToolbarBackground = observer(function RoomTableToolbarBack
             <RoomTableToolbarBackgroundTitle>{locale.t('table.title')}</RoomTableToolbarBackgroundTitle>
             <RoomTableToolbarBackgroundHint>{locale.t('table.hint')}</RoomTableToolbarBackgroundHint>
             <RoomTableToolbarSwatches />
-            <RoomTableToolbarBackgroundSurprise type="button" onClick={room.surpriseBackground}>
+            <RoomTableToolbarBackgroundSurprise type="button" onClick={room.background.surprise}>
               <DicesIcon />
               {locale.t('table.surprise')}
             </RoomTableToolbarBackgroundSurprise>

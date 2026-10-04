@@ -1,3 +1,4 @@
+import { chatMaxLength } from '@felt-table/protocol';
 import { makeAutoObservable } from 'mobx';
 import type { Localizer, Translate } from '../locale';
 import type { RoomPresenceStore } from './presence';
@@ -18,16 +19,8 @@ export interface FeedEntry {
 export interface RoomFeedDeps {
   presence: RoomPresenceStore;
   locale: Localizer;
-  now: () => number;
-  createId: () => string;
+  send: (text: string) => void;
 }
-
-type WithoutStamp<T> = T extends unknown ? Omit<T, 'id' | 'at'> : never;
-
-export type NewFeedItem = WithoutStamp<FeedItem>;
-
-const maxItems = 200;
-const maxLength = 500;
 const groupWindowMs = 5 * 60_000;
 
 // Slack groups consecutive messages from one person within a few minutes under one header.
@@ -41,6 +34,8 @@ const describe = (event: FeedEvent, t: Translate): string => {
   switch (event.type) {
     case 'joined':
       return t('feed.joined');
+    case 'left':
+      return t('feed.left');
     case 'background':
       return t('feed.background', { surface: backgroundLabel(event.background, t) });
     case 'renamed':
@@ -48,14 +43,13 @@ const describe = (event: FeedEvent, t: Translate): string => {
   }
 };
 
-// Chat messages and system lines, newest last, plus the composer draft.
+// Chat messages and system lines from the server, newest last, plus the composer draft.
 export class RoomFeedStore {
-  items: FeedItem[];
+  items: FeedItem[] = [];
   draft = '';
   readonly #deps: RoomFeedDeps;
 
-  constructor(items: FeedItem[], deps: RoomFeedDeps) {
-    this.items = items;
+  constructor(deps: RoomFeedDeps) {
     this.#deps = deps;
     makeAutoObservable(this, {}, { autoBind: true });
   }
@@ -72,39 +66,42 @@ export class RoomFeedStore {
     return !this.canSend;
   }
 
-  setDraft(draft: string): void {
-    this.draft = draft.slice(0, maxLength);
+  get maxLength(): number {
+    return chatMaxLength;
   }
 
+  receive(items: FeedItem[]): void {
+    this.items = items;
+  }
+
+  setDraft(draft: string): void {
+    this.draft = draft.slice(0, chatMaxLength);
+  }
+
+  // The message shows once the server has added it to the feed.
   send(): void {
     const text = this.draft.trim();
 
     if (!text) return;
 
-    this.add({ kind: 'message', authorId: this.#deps.presence.meId, text });
+    this.#deps.send(text);
     this.draft = '';
-  }
-
-  add(item: NewFeedItem): void {
-    const entry: FeedItem = { ...item, id: this.#deps.createId(), at: this.#deps.now() };
-    const last = this.items.at(-1);
-    const replacesLast = item.mergeKey !== undefined && last?.mergeKey === item.mergeKey;
-    const kept = replacesLast ? this.items.slice(0, -1) : this.items;
-
-    this.items = [...kept, entry].slice(-maxItems);
   }
 
   #toEntry(item: FeedItem, previous: FeedItem | undefined): FeedEntry {
     const { locale, presence } = this.#deps;
+    // Someone still at the table shows as they are right now (a rename we haven't heard back
+    // about yet included); someone who left, with the name and colour the line kept.
     const author = presence.find(item.authorId);
+    const authorName = author?.name ?? item.authorName;
 
     return {
       id: item.id,
       kind: item.kind,
       text: item.kind === 'message' ? item.text : describe(item.event, locale.t),
-      authorName: author?.name ?? locale.t('chat.someone'),
-      authorInitial: author?.initial ?? '?',
-      authorColor: author?.color ?? 'indigo',
+      authorName: authorName || locale.t('chat.someone'),
+      authorInitial: authorName.charAt(0).toUpperCase() || '?',
+      authorColor: author?.color ?? item.authorColor,
       timeLabel: locale.formatTime(item.at),
       startsGroup: isGroupStart(item, previous),
     };

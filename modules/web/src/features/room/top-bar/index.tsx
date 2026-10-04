@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import type { ReactElement } from 'react';
-import { LinkIcon, LogoMark } from '../../../assets';
+import { LinkIcon, LogoMark, SpinnerIcon } from '../../../assets';
 import { useRootStore } from '../../../stores/use-root-store';
 import { RoomTopBarLink } from './link';
 import { RoomTopBarPeople } from './people';
@@ -8,6 +8,7 @@ import {
   RoomTopBarBrand,
   RoomTopBarEnd,
   RoomTopBarLanguage,
+  RoomTopBarReconnecting,
   RoomTopBarRoot,
   RoomTopBarShare,
   RoomTopBarShareLabel,
@@ -24,6 +25,12 @@ export const RoomTopBar = observer(function RoomTopBar(): ReactElement {
           <LogoMark />
           Felt Table
         </RoomTopBarBrand>
+        {room.connection.isReconnecting && (
+          <RoomTopBarReconnecting role="status">
+            <SpinnerIcon />
+            {locale.t('status.reconnecting')}
+          </RoomTopBarReconnecting>
+        )}
       </RoomTopBarStart>
       <RoomTopBarLink />
       <RoomTopBarEnd>

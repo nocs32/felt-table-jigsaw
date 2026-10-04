@@ -10,7 +10,7 @@ export interface MemberView {
   status: PresenceStatus;
   isMe: boolean;
   isOnline: boolean;
-  // Shown after the name in the people list: "you", "away" or nothing.
+  // Shown after the name in the people list: "you", "reconnecting" or nothing.
   note: string;
 }
 
@@ -19,7 +19,7 @@ const stackSize = 5;
 const noteFor = (member: Member, meId: string, t: Translate): string => {
   if (member.id === meId) return t('people.you');
 
-  return member.status === 'away' ? t('people.away') : '';
+  return member.status === 'reconnecting' ? t('people.reconnecting') : '';
 };
 
 const toView = (member: Member, meId: string, t: Translate): MemberView => ({
@@ -33,17 +33,15 @@ const toView = (member: Member, meId: string, t: Translate): MemberView => ({
   note: noteFor(member, meId, t),
 });
 
-// Who is at the table. Each member's status is its own small state: online ⇄ away.
+// Who is at the table, as the server sees it, in join order. Each member is online ⇄ reconnecting.
 export class RoomPresenceStore {
-  members: Member[];
-  readonly meId: string;
+  members: Member[] = [];
+  meId = '';
   readonly #t: Translate;
 
-  constructor(members: Member[], meId: string, t: Translate) {
-    this.members = members;
-    this.meId = meId;
+  constructor(t: Translate) {
     this.#t = t;
-    makeAutoObservable(this, { meId: false }, { autoBind: true });
+    makeAutoObservable(this, {}, { autoBind: true });
   }
 
   get views(): MemberView[] {
@@ -82,6 +80,12 @@ export class RoomPresenceStore {
     return this.views.find((view) => view.id === id);
   }
 
+  receive(members: Member[], meId: string): void {
+    this.members = members;
+    this.meId = meId;
+  }
+
+  // Shows a new name before the server confirms it.
   rename(id: string, name: string): void {
     this.members = this.members.map((member) => (member.id === id ? { ...member, name } : member));
   }
