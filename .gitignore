@@ -1,5 +1,7 @@
-# Claude + local notes
-.claude/
+# Claude: shared rules/config are tracked, personal settings are not
+.claude/settings.local.json
+
+# Local notes
 .scratch/
 
 # Dependencies

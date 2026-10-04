@@ -14,7 +14,7 @@ A multiplayer jigsaw puzzle you solve with friends in the browser.
 | Part | Tech |
 |---|---|
 | Web (`modules/web`) | React 19, TypeScript, Vite. Coming next: Panda CSS, MobX, Ark UI. |
-| API (`modules/core-api`) | Node.js, Express 5, TypeScript (run with `tsx`). Coming next: a live multiplayer layer. |
+| API (`modules/core-api`) | Node.js, Express 5, TypeScript (run with `tsx`). Coming next: Colyseus for the live multiplayer rooms. |
 | Tooling | pnpm workspaces, ESLint 10 + typescript-eslint, TypeScript 6.0 |
 
 The server owns all shared state. It cuts the puzzle, decides who holds which piece and when pieces snap, and streams the results to every player. Rooms and pictures live in the server's memory only, so there is no database.

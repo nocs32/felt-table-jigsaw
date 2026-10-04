@@ -8,7 +8,7 @@ The full spec is in `.scratch/SPEC.md`. Read §0 "Decisions so far" before plann
 
 ## Layout
 - `modules/web` — frontend: Vite + React 19 + TypeScript. Panda CSS, MobX and Ark UI are added as features need them.
-- `modules/core-api` — backend: Node + Express 5. The live multiplayer layer is planned to be Colyseus, still to be confirmed.
+- `modules/core-api` — backend: Node + Express 5. Colyseus is the decided live multiplayer layer, not installed yet. Frontend comes first.
 - `eslint.config.mjs` + `eslint-rules/` — the house lint rules for every module.
 - `.scratch/` — spec and notes, ignored by git. `.scratch/prototype.html` is the old single-file demo: the reference for porting the cutting and snapping code.
 
