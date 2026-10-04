@@ -6,11 +6,18 @@
   "scripts": {
     "dev": "pnpm --parallel --recursive run dev",
     "lint": "eslint .",
-    "typecheck": "pnpm --recursive run typecheck"
+    "typecheck": "pnpm --recursive run typecheck",
+    "test": "pnpm --recursive run test",
+    "build": "pnpm --recursive run build",
+    "play": "pnpm build && concurrently --kill-others --names api,web,tunnel --prefix-colors blue,magenta,yellow \"pnpm play:api\" \"pnpm play:web\" \"pnpm play:tunnel\"",
+    "play:api": "pnpm --filter @felt-table/core-api start",
+    "play:web": "pnpm --filter @felt-table/web preview",
+    "play:tunnel": "node play-tunnel.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "concurrently": "^10.0.5",
     "eslint": "^10.12.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",

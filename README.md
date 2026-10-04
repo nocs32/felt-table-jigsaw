@@ -21,7 +21,7 @@ The server owns all shared state. It cuts the puzzle, decides who holds which pi
 
 ## Getting started
 
-**Requirements:** Node.js 24+ and pnpm 11+.
+**Requirements:** Node.js 24 (see `.nvmrc`) and pnpm 11+.
 
 ```bash
 pnpm install
@@ -44,6 +44,34 @@ Open the web URL. If everything is wired up, the page says **"core-api is online
 | `pnpm dev` | Runs the web app and the API with hot reload |
 | `pnpm lint` | Lints every module; `pnpm lint --fix` fixes spacing automatically |
 | `pnpm typecheck` | Type-checks every module |
+| `pnpm test` | Runs the engine and core-api tests |
+| `pnpm build` | Builds the web app for production |
+| `pnpm play` | Builds, then serves the game at https://jigsaw.timnox.dev from this computer (see below) |
+
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) runs lint, typecheck, test and build on every pull request and every push to `main`.
+
+## Play with friends
+
+There's no cloud server: `pnpm play` runs Felt Table on your own computer, and a free [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) puts it on **https://jigsaw.timnox.dev**. No router ports are opened, and your home address stays hidden behind Cloudflare.
+
+```bash
+pnpm play
+```
+
+- It builds the web app, then starts core-api, the production web server (`vite preview` on `127.0.0.1:4173`) and the tunnel. Ctrl+C stops all three.
+- Stop `pnpm dev` first: both use core-api's port 2567.
+- Keep the computer awake while you play. Closing the terminal or restarting wipes the tables, like any server restart.
+- To ship a change, stop `pnpm play` and start it again. It rebuilds from what's checked out.
+
+**One-time setup** on the computer that hosts: install `cloudflared` (`winget install Cloudflare.cloudflared`), open a new terminal so it's on PATH, then:
+
+```bash
+cloudflared tunnel login
+cloudflared tunnel create felt-table
+cloudflared tunnel route dns felt-table jigsaw.timnox.dev
+```
+
+The tunnel's credentials live in `~/.cloudflared/`, outside the repo. Keep them private.
 
 ## Project layout
 

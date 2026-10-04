@@ -33,7 +33,9 @@ pnpm install
 pnpm dev           # web on http://localhost:5173 + core-api on :2567 (Vite forwards /api, and /live for tables)
 pnpm lint          # add --fix to auto-fix spacing
 pnpm typecheck
-pnpm --filter @felt-table/core-api test   # also: @felt-table/engine
+pnpm test          # engine + core-api; one module: pnpm --filter @felt-table/core-api test
+pnpm build         # production web build (CI runs lint, typecheck, test, build on every PR and push to main)
+pnpm play          # build + serve at https://jigsaw.timnox.dev from this PC through a Cloudflare Tunnel
 ```
 
 ## Gotchas
@@ -42,4 +44,5 @@ pnpm --filter @felt-table/core-api test   # also: @felt-table/engine
 - **pnpm's release-age guard:** pnpm refuses versions published in the last day. Pick the previous version instead of adding exceptions.
 - **Testing multiplayer:** `/` creates a table and redirects to `/r/:id`; open that link in a second tab to be a second person. Each tab keeps its seat across reloads (sessionStorage).
 - **Tables live in core-api's memory:** restarting it wipes every table, and editing server code while `pnpm dev` runs restarts it (`tsx watch`). Old links then show "This table has been cleared".
+- **Hosting is `pnpm play`, not a cloud host** (spec D26: free, no payment card). It runs `vite preview` on `127.0.0.1:4173`, which reuses the dev `/api` + `/live` proxy, plus core-api and the `felt-table` Cloudflare Tunnel (credentials in `~/.cloudflared/`). Stop `pnpm dev` first, since both need port 2567. `play-tunnel.mjs` finds `cloudflared` on PATH or in its Windows install folder, because shells (and apps) started before the install don't have it on PATH.
 - **Dev handle:** in development the root store is `window.feltTable` (e.g. `feltTable.room.puzzle.groups`), for checking state from the console or a test script.
