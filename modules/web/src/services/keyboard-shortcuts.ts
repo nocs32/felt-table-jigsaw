@@ -9,11 +9,11 @@ const isIgnored = (event: KeyboardEvent): boolean =>
   event.repeat || event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target);
 
 const letterActions = (store: RootStore): Record<string, () => void> => ({
-  c: store.ui.layout.togglePanel,
-  b: store.ui.layout.togglePanel,
+  c: store.ui.widgets.chat.toggle,
+  b: store.ui.widgets.togglePicture,
 });
 
-// App-wide keys: 1–6 fire the quick reactions, letters run table/panel actions.
+// App-wide keys: 1–6 fire the quick reactions, letters toggle the chat (C) and picture (B).
 // Started once in index.tsx; returns a function that stops it.
 export const startKeyboardShortcuts = (store: RootStore): (() => void) => {
   const onKeyDown = (event: KeyboardEvent): void => {

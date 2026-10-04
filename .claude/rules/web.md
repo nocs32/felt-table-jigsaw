@@ -121,6 +121,15 @@ A `.tsx` component turns store data into JSX. Nothing else.
 - **Colours, spacing, radii and fonts** come from Panda tokens and semantic tokens. No raw hex values outside the Panda config (`panda.config.ts` and `panda/`).
 - **Dialogs, menus, popovers, sliders, tabs and tooltips** use Ark UI, as described above.
 
+## 6. All UI text is translated (English + Ukrainian)
+- **Never hard-code UI text.** Add a key to `src/i18n/en.ts` and the same key to `src/i18n/uk.ts`; typecheck fails if Ukrainian misses one.
+- **Components** read `const { locale } = useRootStore();` and render `locale.t('chat.send')`. They're observers, so they re-render when the language changes.
+- **Stores** get `t` (or the `Localizer`: `t` + `formatTime`) injected and use it inside getters: `get shareLabel() { return this.#t('share.share'); }`.
+- **Plurals** use i18next suffixes: `_one`/`_other` in English, `_one`/`_few`/`_many`/`_other` in Ukrainian, and the caller passes `count`.
+- **Shared text that others see** (chat system lines) is stored as data (`{ type: 'renamed', name }`) and translated when shown, so each person reads it in their own language.
+- **Ukrainian system lines use the present tense** ("змінює стіл") so they don't depend on the person's gender.
+- Brand names (Felt Table, Unsplash) and user content (names, messages) aren't translated.
+
 ## Folder example
 ```
 src/

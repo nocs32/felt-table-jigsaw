@@ -11,12 +11,6 @@ export default defineConfig({
   jsxFramework: 'react',
   // Styles live in styled-components.ts files only: no style props in JSX.
   jsxStyleProps: 'none',
-  conditions: {
-    extend: {
-      dark: '[data-theme=dark] &',
-      light: '[data-theme=light] &',
-    },
-  },
   globalCss,
   theme: {
     extend: { tokens, semanticTokens, keyframes },

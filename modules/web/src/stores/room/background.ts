@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
-import { backgroundLabel, randomTableColor, tableBackgroundOptions } from './table-backgrounds';
+import type { Translate } from '../locale';
+import { presetLabel, randomTableColor, tableBackgroundPresets } from './table-backgrounds';
 import type { TableBackground, TableBackgroundPreset } from './types';
 
 export type TableSurfaceVariant = TableBackgroundPreset | 'custom';
@@ -17,9 +18,11 @@ const defaultCustomColor = '#2f5d55';
 export class RoomBackgroundStore {
   current: TableBackground = { kind: 'preset', preset: 'feltGreen' };
   readonly #random: () => number;
+  readonly #t: Translate;
 
-  constructor(random: () => number) {
+  constructor(random: () => number, t: Translate) {
     this.#random = random;
+    this.#t = t;
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -44,12 +47,12 @@ export class RoomBackgroundStore {
     return this.preset ?? 'custom';
   }
 
-  get label(): string {
-    return backgroundLabel(this.current);
-  }
-
   get options(): BackgroundOptionView[] {
-    return tableBackgroundOptions.map((option) => ({ ...option, isSelected: option.preset === this.preset }));
+    return tableBackgroundPresets.map((preset) => ({
+      preset,
+      label: presetLabel(preset, this.#t),
+      isSelected: preset === this.preset,
+    }));
   }
 
   choosePreset(preset: TableBackgroundPreset): void {
@@ -67,11 +70,11 @@ export class RoomBackgroundStore {
       return;
     }
 
-    const others = tableBackgroundOptions.filter((option) => option.preset !== this.preset);
+    const others = tableBackgroundPresets.filter((preset) => preset !== this.preset);
     const pick = others[Math.floor(this.#random() * others.length)];
 
     if (pick) {
-      this.choosePreset(pick.preset);
+      this.choosePreset(pick);
     }
   }
 }

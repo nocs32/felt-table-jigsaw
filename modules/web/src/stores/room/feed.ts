@@ -1,6 +1,8 @@
 import { makeAutoObservable } from 'mobx';
+import type { Localizer, Translate } from '../locale';
 import type { RoomPresenceStore } from './presence';
-import type { FeedItem, FeedItemKind, PlayerColor } from './types';
+import { backgroundLabel } from './table-backgrounds';
+import type { FeedEvent, FeedItem, FeedItemKind, PlayerColor } from './types';
 
 export interface FeedEntry {
   id: string;
@@ -15,16 +17,18 @@ export interface FeedEntry {
 
 export interface RoomFeedDeps {
   presence: RoomPresenceStore;
+  locale: Localizer;
   now: () => number;
   createId: () => string;
 }
 
-export type NewFeedItem = Omit<FeedItem, 'id' | 'at'>;
+type WithoutStamp<T> = T extends unknown ? Omit<T, 'id' | 'at'> : never;
+
+export type NewFeedItem = WithoutStamp<FeedItem>;
 
 const maxItems = 200;
 const maxLength = 500;
 const groupWindowMs = 5 * 60_000;
-const timeFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
 
 // Slack groups consecutive messages from one person within a few minutes under one header.
 const isGroupStart = (item: FeedItem, previous: FeedItem | undefined): boolean =>
@@ -32,6 +36,17 @@ const isGroupStart = (item: FeedItem, previous: FeedItem | undefined): boolean =
   previous?.kind !== 'message' ||
   previous.authorId !== item.authorId ||
   item.at - previous.at > groupWindowMs;
+
+const describe = (event: FeedEvent, t: Translate): string => {
+  switch (event.type) {
+    case 'joined':
+      return t('feed.joined');
+    case 'background':
+      return t('feed.background', { surface: backgroundLabel(event.background, t) });
+    case 'renamed':
+      return t('feed.renamed', { name: event.name });
+  }
+};
 
 // Chat messages and system lines, newest last, plus the composer draft.
 export class RoomFeedStore {
@@ -80,16 +95,17 @@ export class RoomFeedStore {
   }
 
   #toEntry(item: FeedItem, previous: FeedItem | undefined): FeedEntry {
-    const author = this.#deps.presence.find(item.authorId);
+    const { locale, presence } = this.#deps;
+    const author = presence.find(item.authorId);
 
     return {
       id: item.id,
       kind: item.kind,
-      text: item.text,
-      authorName: author?.name ?? 'Someone',
+      text: item.kind === 'message' ? item.text : describe(item.event, locale.t),
+      authorName: author?.name ?? locale.t('chat.someone'),
       authorInitial: author?.initial ?? '?',
       authorColor: author?.color ?? 'indigo',
-      timeLabel: timeFormat.format(item.at),
+      timeLabel: locale.formatTime(item.at),
       startsGroup: isGroupStart(item, previous),
     };
   }

@@ -6,7 +6,7 @@ import { Button } from '../../../ui';
 import { RoomTableEmptyCard, RoomTableEmptyIcon, RoomTableEmptyRoot, RoomTableEmptyText, RoomTableEmptyTitle } from './styled-components';
 
 export const RoomTableEmpty = observer(function RoomTableEmpty(): ReactElement {
-  const { dialog } = useRootStore().ui;
+  const { locale, ui } = useRootStore();
 
   return (
     <RoomTableEmptyRoot>
@@ -14,11 +14,11 @@ export const RoomTableEmpty = observer(function RoomTableEmpty(): ReactElement {
         <RoomTableEmptyIcon>
           <PuzzleIcon />
         </RoomTableEmptyIcon>
-        <RoomTableEmptyTitle>No puzzle on the table yet</RoomTableEmptyTitle>
-        <RoomTableEmptyText>Pick a picture and how hard it should be. Everyone here solves it together.</RoomTableEmptyText>
-        <Button type="button" tone="primary" onClick={dialog.openNewPuzzle}>
+        <RoomTableEmptyTitle>{locale.t('empty.title')}</RoomTableEmptyTitle>
+        <RoomTableEmptyText>{locale.t('empty.text')}</RoomTableEmptyText>
+        <Button type="button" tone="primary" onClick={ui.dialog.openNewPuzzle}>
           <SparklesIcon />
-          New puzzle
+          {locale.t('empty.newPuzzle')}
         </Button>
       </RoomTableEmptyCard>
     </RoomTableEmptyRoot>

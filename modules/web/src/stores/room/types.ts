@@ -19,18 +19,6 @@ export interface Member {
   status: PresenceStatus;
 }
 
-export type FeedItemKind = 'system' | 'message';
-
-export interface FeedItem {
-  id: string;
-  kind: FeedItemKind;
-  authorId: string;
-  text: string;
-  at: number;
-  // Consecutive items with the same key replace each other (e.g. rapid background changes).
-  mergeKey?: string;
-}
-
 export type TableBackgroundPreset =
   | 'feltGreen'
   | 'feltNavy'
@@ -43,3 +31,36 @@ export type TableBackgroundPreset =
   | 'linen';
 
 export type TableBackground = { kind: 'preset'; preset: TableBackgroundPreset } | { kind: 'color'; color: string };
+
+// What a system line in the feed says. Kept as data, so each viewer reads it in their own language.
+export type FeedEvent =
+  | { type: 'joined' }
+  | { type: 'background'; background: TableBackground }
+  | { type: 'renamed'; name: string };
+
+interface FeedItemBase {
+  id: string;
+  authorId: string;
+  at: number;
+  // Consecutive items with the same key replace each other (e.g. rapid background changes).
+  mergeKey?: string;
+}
+
+export type FeedItem = (FeedItemBase & { kind: 'message'; text: string }) | (FeedItemBase & { kind: 'system'; event: FeedEvent });
+
+export type FeedItemKind = FeedItem['kind'];
+
+// Unsplash requires crediting the photographer, with links back to them and to Unsplash.
+export interface PictureCredit {
+  name: string;
+  profileUrl: string;
+  sourceUrl: string;
+}
+
+export interface PuzzlePicture {
+  src: string;
+  width: number;
+  height: number;
+  alt: string;
+  credit: PictureCredit | null;
+}

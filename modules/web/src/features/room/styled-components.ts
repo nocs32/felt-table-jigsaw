@@ -9,13 +9,16 @@ export const RoomRoot = styled('div', {
   },
 });
 
-// Sidebar + main + panel share one rounded frame on the aubergine background, like Slack.
-export const RoomFrame = styled('div', {
+// The table and its header sit in one rounded frame on the app background, like Slack.
+export const RoomMain = styled('main', {
   base: {
     position: 'relative',
     display: 'flex',
+    flexDirection: 'column',
     minHeight: '0',
     overflow: 'hidden',
+    bg: 'bg.surface',
+    color: 'fg.default',
     lg: {
       marginInline: '6px',
       marginBottom: '6px',
@@ -23,29 +26,6 @@ export const RoomFrame = styled('div', {
       border: '1px solid',
       borderColor: 'chrome.border',
     },
-  },
-});
-
-export const RoomMain = styled('main', {
-  base: {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: '1',
-    minWidth: '0',
-    bg: 'bg.surface',
-    color: 'fg.default',
-  },
-});
-
-export const RoomScrim = styled('div', {
-  base: {
-    position: 'absolute',
-    inset: '0',
-    zIndex: '25',
-    bg: 'bg.overlay',
-    animation: 'fadeIn 0.15s ease-out',
-    lg: { display: 'none' },
   },
 });
 
@@ -59,7 +39,7 @@ export const RoomHeaderRoot = styled('header', {
     paddingLeft: '16px',
     paddingRight: '10px',
     borderBottom: '1px solid',
-    borderColor: 'border.default',
+    borderColor: 'border.subtle',
     bg: 'bg.surface',
   },
 });
@@ -67,14 +47,22 @@ export const RoomHeaderRoot = styled('header', {
 export const RoomHeaderTitle = styled('h1', {
   base: {
     display: 'flex',
-    alignItems: 'center',
-    gap: '2px',
     minWidth: '0',
     fontSize: '18px',
     fontWeight: '900',
     letterSpacing: '-0.01em',
     whiteSpace: 'nowrap',
-    '& svg': { width: '18px', height: '18px', color: 'fg.muted' },
+  },
+});
+
+// A label, so clicking the # also starts renaming.
+export const RoomHeaderName = styled('label', {
+  base: {
+    display: 'flex',
+    alignItems: 'center',
+    minWidth: '0',
+    cursor: 'text',
+    '& > svg': { width: '18px', height: '18px', flexShrink: '0', color: 'fg.muted' },
   },
 });
 
@@ -84,7 +72,7 @@ export const RoomHeaderSummary = styled('p', {
     minWidth: '0',
     paddingLeft: '12px',
     borderLeft: '1px solid',
-    borderColor: 'border.default',
+    borderColor: 'border.subtle',
     fontSize: '13px',
     color: 'fg.muted',
     whiteSpace: 'nowrap',

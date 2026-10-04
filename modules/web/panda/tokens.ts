@@ -1,5 +1,6 @@
 import { defineTokens } from '@pandacss/dev';
 
+// Palette from the Ark UI docs (dark): Radix "sand" greys with Ark's coral accent.
 export const tokens = defineTokens({
   fonts: {
     body: { value: 'Lato, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif' },
@@ -7,36 +8,37 @@ export const tokens = defineTokens({
     emoji: { value: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' },
   },
   colors: {
-    aubergine: {
-      950: { value: '#2C0A2D' },
-      900: { value: '#350D36' },
-      800: { value: '#3F0E40' },
-      700: { value: '#4A154B' },
+    sand: {
+      1: { value: '#111110' },
+      2: { value: '#191918' },
+      3: { value: '#222221' },
+      4: { value: '#2A2A28' },
+      5: { value: '#31312E' },
+      6: { value: '#3B3A37' },
+      7: { value: '#494844' },
+      8: { value: '#62605B' },
+      9: { value: '#6F6D66' },
+      10: { value: '#7C7B74' },
+      11: { value: '#B5B3AD' },
+      12: { value: '#EEEEEC' },
     },
-    night: {
-      950: { value: '#121016' },
-      900: { value: '#19171D' },
-      800: { value: '#1A1D21' },
-      700: { value: '#222529' },
-      600: { value: '#35373B' },
-      500: { value: '#565856' },
+    coral: {
+      1: { value: '#1C1412' },
+      2: { value: '#391A18' },
+      3: { value: '#55221E' },
+      4: { value: '#722B25' },
+      5: { value: '#8E342B' },
+      6: { value: '#AA3D32' },
+      7: { value: '#C6493A' },
+      8: { value: '#E2503F' },
+      9: { value: '#EB5E41' },
+      10: { value: '#EF6B4E' },
+      11: { value: '#F47A5C' },
+      12: { value: '#FAA19B' },
     },
-    ink: {
-      900: { value: '#1D1C1D' },
-      600: { value: '#616061' },
-      300: { value: '#DDDDDD' },
-      100: { value: '#F8F8F8' },
-    },
-    brand: {
-      green: { value: '#007A5A' },
-      greenHover: { value: '#148567' },
-      blue: { value: '#1264A3' },
-      blueActive: { value: '#1164A3' },
-      sky: { value: '#1D9BD1' },
-      skyTint: { value: '#E8F5FA' },
-      red: { value: '#E01E5A' },
-      online: { value: '#2BAC76' },
-      mustard: { value: '#ECB22E' },
+    status: {
+      red: { value: '#E5484D' },
+      green: { value: '#30A46C' },
     },
     player: {
       raspberry: { value: '#E01E5A' },

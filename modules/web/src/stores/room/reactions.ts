@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import type { Schedule } from '../../services';
+import type { Translate } from '../locale';
 
 export const flightLanes = ['l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7', 'l8', 'l9'] as const;
 
@@ -28,6 +29,7 @@ export interface RoomReactionsDeps {
   createId: () => string;
   schedule: Schedule;
   repeat: Schedule;
+  t: Translate;
 }
 
 export const defaultQuickReactions: readonly string[] = ['👍', '🎉', '😂', '🔥', '👀', '🧩'];
@@ -54,7 +56,7 @@ export class RoomReactionsStore {
   }
 
   get quickButtons(): QuickReactionView[] {
-    return this.quick.map((emoji, index) => ({ emoji, label: `React with ${emoji} (key ${index + 1})` }));
+    return this.quick.map((emoji, index) => ({ emoji, label: this.#deps.t('toolbar.react', { emoji, key: index + 1 }) }));
   }
 
   fire(emoji: string, sender: string | null = null): void {

@@ -6,8 +6,8 @@ import './stores/configure-mobx';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app';
+import { syncDocumentLanguage } from './services/document-language';
 import { startKeyboardShortcuts } from './services/keyboard-shortcuts';
-import { syncTheme } from './services/theme-sync';
 import { createRootStore } from './stores';
 
 const rootElement = document.getElementById('root');
@@ -18,7 +18,7 @@ if (!rootElement) {
 
 const store = createRootStore();
 
-syncTheme(store.ui.theme);
+syncDocumentLanguage(store.locale);
 startKeyboardShortcuts(store);
 
 createRoot(rootElement).render(

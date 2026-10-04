@@ -53,8 +53,8 @@ export const RoomTableEmptyIcon = styled('span', {
     width: '48px',
     height: '48px',
     borderRadius: '12px',
-    bg: 'chrome.sidebar',
-    color: 'brand.mustard',
+    bg: 'accent.tint',
+    color: 'accent.text',
     '& svg': { width: '26px', height: '26px' },
   },
 });
@@ -68,7 +68,7 @@ export const RoomTableEmptyText = styled('p', {
 });
 
 export const RoomTableFlightsRoot = styled('div', {
-  base: { position: 'absolute', inset: '0', zIndex: '5', overflow: 'hidden', pointerEvents: 'none' },
+  base: { position: 'absolute', inset: '0', zIndex: '6', overflow: 'hidden', pointerEvents: 'none' },
 });
 
 export const RoomTableFlightsRise = styled('div', {
@@ -119,75 +119,73 @@ export const RoomTableFlightsName = styled('span', {
     marginTop: '4px',
     paddingInline: '6px',
     borderRadius: '4px',
-    bg: 'chrome.sidebar',
-    color: 'fg.onAccent',
+    bg: 'sand.1',
+    color: 'fg.default',
     fontFamily: 'body',
     fontSize: '11px',
     fontWeight: '700',
   },
 });
 
-export const RoomTableReactionBarRoot = styled('div', {
+// A floating widget. Position and size come from CSS variables set by useRoomTableWidget.
+export const RoomTableWidgetRoot = styled('section', {
   base: {
     position: 'absolute',
-    left: '50%',
-    bottom: '16px',
-    zIndex: '10',
+    top: '0',
+    left: '0',
     display: 'flex',
-    alignItems: 'center',
-    gap: '2px',
-    maxWidth: 'calc(100% - 24px)',
-    padding: '4px',
+    flexDirection: 'column',
+    width: 'var(--widget-width)',
+    height: 'var(--widget-height)',
     borderRadius: '12px',
+    overflow: 'hidden',
     bg: 'bg.surface',
     color: 'fg.default',
     boxShadow: 'floating',
-    transform: 'translateX(-50%)',
+    transform: 'translate3d(var(--widget-x), var(--widget-y), 0)',
+    animation: 'fadeIn 0.15s ease-out',
+    '&:hover [data-widget-resize], &:focus-within [data-widget-resize]': { opacity: '1' },
+  },
+  variants: {
+    layer: {
+      picture: { zIndex: '4' },
+      chat: { zIndex: '5' },
+    },
+    gesture: {
+      idle: {},
+      pressed: {},
+      moving: { boxShadow: 'dialog', userSelect: 'none', '& [data-widget-move]': { cursor: 'grabbing' } },
+      resizing: { boxShadow: 'dialog', userSelect: 'none', cursor: 'nwse-resize' },
+    },
   },
 });
 
-export const RoomTableReactionBarEmoji = styled('button', {
+// The bottom-right grip. Shows on hover (always on touch screens).
+export const RoomTableWidgetResize = styled('div', {
   base: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '38px',
-    height: '38px',
-    borderRadius: '8px',
-    fontFamily: 'emoji',
-    fontSize: '21px',
-    lineHeight: '1',
-    cursor: 'pointer',
-    userSelect: 'none',
-    touchAction: 'manipulation',
-    transition: 'background-color 0.12s ease, transform 0.12s ease',
-    _hover: { bg: 'bg.hover', transform: 'translateY(-2px) scale(1.12)' },
-    _active: { transform: 'scale(0.92)' },
-    _focusVisible: { outline: '2px solid', outlineColor: 'accent.link', outlineOffset: '1px' },
-    // Phones show four quick emoji.
-    '&:nth-child(n+5)': { display: 'none', sm: { display: 'inline-flex' } },
-  },
-});
-
-export const RoomTableReactionBarDivider = styled('span', {
-  base: { width: '1px', height: '24px', marginInline: '4px', bg: 'border.default' },
-});
-
-export const RoomTableReactionBarButton = styled('button', {
-  base: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '38px',
-    height: '38px',
-    borderRadius: '8px',
-    color: 'fg.muted',
-    cursor: 'pointer',
-    transition: 'background-color 0.12s ease, color 0.12s ease',
-    _hover: { bg: 'bg.hover', color: 'fg.default' },
-    _focusVisible: { outline: '2px solid', outlineColor: 'accent.link', outlineOffset: '1px' },
-    _disabled: { opacity: '0.4', cursor: 'not-allowed' },
-    '&[aria-pressed=true], &[data-state=open]': { bg: 'accent.tint', color: 'accent.link' },
-    '& svg': { width: '20px', height: '20px' },
+    position: 'absolute',
+    right: '0',
+    bottom: '0',
+    zIndex: '1',
+    width: '20px',
+    height: '20px',
+    cursor: 'nwse-resize',
+    touchAction: 'none',
+    opacity: '0',
+    transition: 'opacity 0.12s ease',
+    '@media (hover: none)': { opacity: '1' },
+    _after: {
+      content: '""',
+      position: 'absolute',
+      right: '5px',
+      bottom: '5px',
+      width: '9px',
+      height: '9px',
+      borderRight: '2px solid',
+      borderBottom: '2px solid',
+      borderColor: 'fg.muted',
+      borderBottomRightRadius: '3px',
+      filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))',
+    },
   },
 });

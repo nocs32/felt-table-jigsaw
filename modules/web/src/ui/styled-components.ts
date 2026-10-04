@@ -17,12 +17,12 @@ export const AvatarRoot = styled('span', {
       raspberry: { bg: 'player.raspberry' },
       sky: { bg: 'player.sky' },
       green: { bg: 'player.green' },
-      mustard: { bg: 'player.mustard', color: 'ink.900' },
+      mustard: { bg: 'player.mustard', color: 'sand.1' },
       violet: { bg: 'player.violet' },
       orange: { bg: 'player.orange' },
       teal: { bg: 'player.teal' },
       pink: { bg: 'player.pink' },
-      lime: { bg: 'player.lime', color: 'ink.900' },
+      lime: { bg: 'player.lime', color: 'sand.1' },
       indigo: { bg: 'player.indigo' },
     },
     size: {
@@ -47,12 +47,12 @@ export const AvatarPresence = styled('span', {
     height: '10px',
     borderRadius: 'full',
     border: '2px solid',
-    borderColor: 'chrome.sidebar',
+    borderColor: 'bg.surface',
   },
   variants: {
     status: {
       online: { bg: 'presence.online' },
-      away: { bg: 'chrome.sidebar', boxShadow: 'inset 0 0 0 1.5px {colors.chrome.fg}' },
+      away: { bg: 'bg.surface', boxShadow: 'inset 0 0 0 1.5px {colors.fg.muted}' },
     },
   },
 });
@@ -71,7 +71,7 @@ export const Button = styled('button', {
     whiteSpace: 'nowrap',
     cursor: 'pointer',
     transition: 'background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease',
-    _focusVisible: { outline: '2px solid', outlineColor: 'accent.link', outlineOffset: '2px' },
+    _focusVisible: { outline: '2px solid', outlineColor: 'accent.ring', outlineOffset: '2px' },
     _disabled: { opacity: '0.45', cursor: 'not-allowed' },
     '& svg': { width: '16px', height: '16px' },
   },
@@ -108,9 +108,9 @@ export const IconButton = styled('button', {
     cursor: 'pointer',
     transition: 'background-color 0.12s ease, color 0.12s ease',
     _hover: { bg: 'bg.hover', color: 'fg.default' },
-    _focusVisible: { outline: '2px solid', outlineColor: 'accent.link', outlineOffset: '1px' },
+    _focusVisible: { outline: '2px solid', outlineColor: 'accent.ring', outlineOffset: '1px' },
     _disabled: { opacity: '0.4', cursor: 'not-allowed', _hover: { bg: 'transparent', color: 'fg.muted' } },
-    '&[aria-pressed=true]': { bg: 'accent.tint', color: 'accent.link' },
+    '&[aria-pressed=true]': { bg: 'accent.tint', color: 'accent.text' },
     '& svg': { width: '18px', height: '18px' },
   },
 });
@@ -137,4 +137,62 @@ export const TableSurface = styled('div', {
     },
   },
   defaultVariants: { surface: 'feltGreen' },
+});
+
+// Auto-sizing inline input: the ::after copy of the text sets the width, the input sits on top.
+export const NameInputSizer = styled('span', {
+  base: {
+    display: 'inline-grid',
+    minWidth: '0',
+    maxWidth: '100%',
+    _after: {
+      content: 'attr(data-value)',
+      gridArea: '1 / 1',
+      visibility: 'hidden',
+      whiteSpace: 'pre',
+      overflow: 'hidden',
+      paddingInline: '6px',
+      font: 'inherit',
+    },
+  },
+  variants: {
+    tone: {
+      heading: {},
+      field: { display: 'grid', width: '100%' },
+    },
+  },
+  defaultVariants: { tone: 'heading' },
+});
+
+export const NameInputField = styled('input', {
+  base: {
+    gridArea: '1 / 1',
+    width: '100%',
+    minWidth: '0',
+    paddingInline: '6px',
+    borderRadius: '6px',
+    bg: 'transparent',
+    color: 'inherit',
+    font: 'inherit',
+    letterSpacing: 'inherit',
+    textOverflow: 'ellipsis',
+    outline: 'none',
+    transition: 'background-color 0.12s ease, box-shadow 0.12s ease',
+    _placeholder: { color: 'fg.subtle' },
+    _hover: { bg: 'bg.hover' },
+    _focus: { bg: 'bg.subtle', boxShadow: 'inset 0 0 0 1px {colors.accent.ring}', textOverflow: 'clip' },
+  },
+  variants: {
+    tone: {
+      heading: { height: '30px', marginInlineStart: '-2px' },
+      field: {
+        height: '34px',
+        paddingInline: '10px',
+        bg: 'bg.subtle',
+        boxShadow: 'inset 0 0 0 1px {colors.border.default}',
+        _hover: { bg: 'bg.subtle', boxShadow: 'inset 0 0 0 1px {colors.border.strong}' },
+      },
+    },
+  },
+  defaultVariants: { tone: 'heading' },
 });

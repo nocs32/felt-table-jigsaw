@@ -6,10 +6,11 @@ import { RoomTopBarLinkHint, RoomTopBarLinkRoot, RoomTopBarLinkText } from './st
 
 // Sits where Slack's search box is: the room link, click to copy.
 export const RoomTopBarLink = observer(function RoomTopBarLink(): ReactElement {
-  const { share } = useRootStore().room;
+  const { locale, room } = useRootStore();
+  const { share } = room;
 
   return (
-    <RoomTopBarLinkRoot type="button" onClick={share.copy} title="Copy the room link">
+    <RoomTopBarLinkRoot type="button" onClick={share.copy} title={locale.t('share.linkTitle')}>
       <LinkIcon />
       <RoomTopBarLinkText>{share.linkLabel}</RoomTopBarLinkText>
       <RoomTopBarLinkHint aria-live="polite">

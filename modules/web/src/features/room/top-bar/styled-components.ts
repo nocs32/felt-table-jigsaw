@@ -30,45 +30,29 @@ export const RoomTopBarBrand = styled('div', {
     fontWeight: '900',
     letterSpacing: '-0.01em',
     sm: { display: 'flex' },
+    '& svg': { width: '24px', height: '24px', flexShrink: '0' },
   },
 });
 
-export const RoomTopBarBrandMark = styled('span', {
+export const RoomTopBarLanguage = styled('button', {
   base: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '24px',
-    height: '24px',
+    minWidth: '34px',
+    height: '28px',
+    paddingInline: '6px',
     borderRadius: '6px',
-    bg: 'chrome.sidebar',
-    color: 'brand.mustard',
-    boxShadow: 'inset 0 0 0 1px {colors.chrome.border}',
-    '& svg': { width: '15px', height: '15px' },
-  },
-});
-
-export const RoomTopBarIconButton = styled('button', {
-  base: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '30px',
-    height: '30px',
-    borderRadius: '6px',
+    border: '1px solid',
+    borderColor: 'chrome.border',
     color: 'chrome.fg',
+    fontSize: '12px',
+    fontWeight: '900',
+    letterSpacing: '0.04em',
     cursor: 'pointer',
     _hover: { bg: 'chrome.hover', color: 'chrome.fgStrong' },
-    _focusVisible: { outline: '2px solid', outlineColor: 'brand.sky', outlineOffset: '1px' },
-    '& svg': { width: '18px', height: '18px' },
+    _focusVisible: { outline: '2px solid', outlineColor: 'accent.ring', outlineOffset: '1px' },
   },
-  variants: {
-    onlyNarrow: {
-      true: { lg: { display: 'none' } },
-      false: {},
-    },
-  },
-  defaultVariants: { onlyNarrow: false },
 });
 
 export const RoomTopBarShare = styled('button', {
@@ -86,7 +70,7 @@ export const RoomTopBarShare = styled('button', {
     whiteSpace: 'nowrap',
     cursor: 'pointer',
     _hover: { bg: 'chrome.hover' },
-    _focusVisible: { outline: '2px solid', outlineColor: 'brand.sky', outlineOffset: '1px' },
+    _focusVisible: { outline: '2px solid', outlineColor: 'accent.ring', outlineOffset: '1px' },
     '& svg': { width: '14px', height: '14px' },
   },
 });
@@ -111,7 +95,7 @@ export const RoomTopBarLinkRoot = styled('button', {
     cursor: 'pointer',
     transition: 'background-color 0.12s ease',
     _hover: { bg: 'chrome.fieldHover', color: 'chrome.fgStrong' },
-    _focusVisible: { outline: '2px solid', outlineColor: 'brand.sky', outlineOffset: '1px' },
+    _focusVisible: { outline: '2px solid', outlineColor: 'accent.ring', outlineOffset: '1px' },
     '& svg': { width: '14px', height: '14px', flexShrink: '0' },
   },
 });
@@ -137,22 +121,5 @@ export const RoomTopBarLinkHint = styled('span', {
     fontWeight: '700',
     color: 'chrome.fgStrong',
     '& svg': { width: '13px', height: '13px' },
-  },
-});
-
-export const RoomTopBarPeopleRoot = styled('div', {
-  base: { display: 'none', alignItems: 'center', paddingRight: '4px', md: { display: 'flex' } },
-});
-
-export const RoomTopBarPeopleItem = styled('span', {
-  base: { display: 'inline-flex', marginLeft: '-6px', _first: { marginLeft: '0' } },
-});
-
-export const RoomTopBarPeopleMore = styled('span', {
-  base: {
-    marginLeft: '6px',
-    fontSize: '12px',
-    fontWeight: '700',
-    color: 'chrome.fg',
   },
 });

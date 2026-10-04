@@ -17,6 +17,9 @@ export const globalCss = defineGlobalStyles({
     '--table-weave':
       'repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 4px), repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 4px)',
   },
+  html: {
+    colorScheme: 'dark',
+  },
   'html, body, #root': {
     height: '100%',
   },
@@ -34,6 +37,6 @@ export const globalCss = defineGlobalStyles({
     color: 'inherit',
   },
   '::selection': {
-    bg: 'accent.tint',
+    bg: 'rgba(235, 94, 65, 0.35)',
   },
 });

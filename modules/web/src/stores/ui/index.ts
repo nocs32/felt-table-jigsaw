@@ -1,15 +1,21 @@
 import type { Services } from '../../services';
 import { UiDialogStore } from './dialog';
-import { UiLayoutStore } from './layout';
-import { UiThemeStore } from './theme';
+import { UiWidgetsStore } from './widgets';
 
+export interface UiDeps {
+  pictureAspect: () => number | null;
+}
+
+// This browser's own UI state: never shared with the room.
 export class UiStore {
-  readonly theme: UiThemeStore;
-  readonly layout: UiLayoutStore;
   readonly dialog = new UiDialogStore();
+  readonly widgets: UiWidgetsStore;
 
-  constructor(services: Services) {
-    this.theme = new UiThemeStore(services.preferences);
-    this.layout = new UiLayoutStore(services.isWideLayout);
+  constructor(services: Services, deps: UiDeps) {
+    this.widgets = new UiWidgetsStore({
+      preferences: services.preferences,
+      isWideLayout: services.isWideLayout,
+      pictureAspect: deps.pictureAspect,
+    });
   }
 }

@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import type { ClipboardService, Schedule } from '../../services';
+import type { Translate } from '../locale';
 
 export type ShareState = 'idle' | 'copied' | 'failed';
 
@@ -8,6 +9,7 @@ export interface RoomShareDeps {
   roomId: string;
   clipboard: ClipboardService;
   schedule: Schedule;
+  t: Translate;
 }
 
 const resetAfterMs = 2000;
@@ -19,13 +21,15 @@ export class RoomShareStore {
   readonly linkLabel: string;
   readonly #clipboard: ClipboardService;
   readonly #schedule: Schedule;
+  readonly #t: Translate;
   #cancelReset: (() => void) | null = null;
 
-  constructor({ origin, roomId, clipboard, schedule }: RoomShareDeps) {
+  constructor({ origin, roomId, clipboard, schedule, t }: RoomShareDeps) {
     this.link = `${origin}/r/${roomId}`;
     this.linkLabel = `${new URL(origin).host}/r/${roomId}`;
     this.#clipboard = clipboard;
     this.#schedule = schedule;
+    this.#t = t;
     makeAutoObservable(this, { link: false, linkLabel: false }, { autoBind: true });
   }
 
@@ -34,15 +38,17 @@ export class RoomShareStore {
   }
 
   get copyLabel(): string {
-    return this.state === 'failed' ? 'Copy failed' : this.isCopied ? 'Copied' : 'Copy';
+    if (this.state === 'failed') return this.#t('share.failed');
+
+    return this.isCopied ? this.#t('share.copied') : this.#t('share.copy');
   }
 
   get shareLabel(): string {
-    return this.isCopied ? 'Link copied' : 'Share';
+    return this.isCopied ? this.#t('share.linkCopied') : this.#t('share.share');
   }
 
   get inviteLabel(): string {
-    return this.isCopied ? 'Link copied!' : 'Invite people';
+    return this.isCopied ? this.#t('share.inviteCopied') : this.#t('share.invite');
   }
 
   copy(): void {

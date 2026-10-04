@@ -1,29 +1,22 @@
+import type { Translate } from '../locale';
 import type { TableBackground, TableBackgroundPreset } from './types';
 
-export interface TableBackgroundOption {
-  preset: TableBackgroundPreset;
-  label: string;
-}
-
-export const tableBackgroundOptions: readonly TableBackgroundOption[] = [
-  { preset: 'feltGreen', label: 'Green felt' },
-  { preset: 'feltNavy', label: 'Navy felt' },
-  { preset: 'feltBurgundy', label: 'Burgundy felt' },
-  { preset: 'feltCharcoal', label: 'Charcoal felt' },
-  { preset: 'walnut', label: 'Walnut' },
-  { preset: 'oak', label: 'Oak' },
-  { preset: 'cork', label: 'Cork' },
-  { preset: 'slate', label: 'Slate' },
-  { preset: 'linen', label: 'Linen' },
+export const tableBackgroundPresets: readonly TableBackgroundPreset[] = [
+  'feltGreen',
+  'feltNavy',
+  'feltBurgundy',
+  'feltCharcoal',
+  'walnut',
+  'oak',
+  'cork',
+  'slate',
+  'linen',
 ];
 
-export const backgroundLabel = (background: TableBackground): string => {
-  if (background.kind === 'color') {
-    return `a custom colour (${background.color})`;
-  }
+export const presetLabel = (preset: TableBackgroundPreset, t: Translate): string => t(`table.surfaces.${preset}`);
 
-  return tableBackgroundOptions.find((option) => option.preset === background.preset)?.label ?? 'a new surface';
-};
+export const backgroundLabel = (background: TableBackground, t: Translate): string =>
+  background.kind === 'color' ? t('table.customSurface', { color: background.color }) : presetLabel(background.preset, t);
 
 const toHexPart = (value: number): string =>
   Math.round(value * 255)

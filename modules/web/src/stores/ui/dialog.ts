@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-export type DialogName = 'newPuzzle' | 'finished' | null;
+export type DialogName = 'newPuzzle' | 'picture' | 'finished' | null;
 
 // Which modal is open. Only one at a time, like Slack.
 export class UiDialogStore {
@@ -14,12 +14,20 @@ export class UiDialogStore {
     return this.open === 'newPuzzle';
   }
 
+  get isPictureOpen(): boolean {
+    return this.open === 'picture';
+  }
+
   get isFinishedOpen(): boolean {
     return this.open === 'finished';
   }
 
   openNewPuzzle(): void {
     this.open = 'newPuzzle';
+  }
+
+  openPicture(): void {
+    this.open = 'picture';
   }
 
   openFinished(): void {
