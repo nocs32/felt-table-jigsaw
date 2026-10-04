@@ -24,4 +24,12 @@ export default defineConfig({
     port: 5173,
     proxy: { '/api': coreApiUrl, '/live': liveProxy },
   },
+  // `pnpm play`: the production build is served here and a Cloudflare Tunnel brings jigsaw.timnox.dev to it.
+  // The preview reuses `server.proxy`, so /api and /live reach core-api exactly as in dev.
+  preview: {
+    host: '127.0.0.1',
+    port: 4173,
+    strictPort: true,
+    allowedHosts: ['jigsaw.timnox.dev'],
+  },
 });
