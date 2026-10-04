@@ -11,6 +11,16 @@ export const tableErrorCodes = [
   'ROOM_CLOSED',
   // A rename that's empty once cleaned up.
   'EMPTY_NAME',
+  // Asked for something about the puzzle while the table has none.
+  'NO_PUZZLE',
+  // The picked picture couldn't be looked up (Unsplash down, out of quota, or no such photo).
+  'PICTURE_UNAVAILABLE',
+  // A group that isn't on the table (any more).
+  'NO_SUCH_GROUP',
+  // Someone else picked that group up first.
+  'GROUP_HELD',
+  // Moving or dropping a group you aren't holding.
+  'NOT_HOLDING',
 ] as const;
 
 export type TableErrorCode = (typeof tableErrorCodes)[number];

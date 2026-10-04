@@ -1,4 +1,4 @@
-import { isTableBackgroundPreset } from '@felt-table/protocol';
+import { isTableBackgroundPreset, readPuzzleFeedText } from '@felt-table/protocol';
 import type { TableFeedItemSnapshot, TableFeedKind, TableMemberSnapshot } from '@felt-table/protocol/state';
 import type { FeedEvent, FeedItem, Member, TableBackground } from './types';
 
@@ -13,6 +13,7 @@ export const toMembers = (members: Record<string, TableMemberSnapshot>): Member[
     name: member.name,
     color: member.color,
     status: member.connected ? 'online' : 'reconnecting',
+    joins: member.joins,
   }));
 
 const toEvent = (kind: Exclude<TableFeedKind, 'message'>, text: string): FeedEvent => {
@@ -24,6 +25,10 @@ const toEvent = (kind: Exclude<TableFeedKind, 'message'>, text: string): FeedEve
       return { type: 'background', background: toBackground(text) };
     case 'renamed':
       return { type: 'renamed', name: text };
+    case 'puzzle':
+      return { type: 'puzzle', ...readPuzzleFeedText(text) };
+    case 'finished':
+      return { type: 'finished', elapsedMs: Number(text) || 0 };
   }
 };
 

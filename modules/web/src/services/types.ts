@@ -1,4 +1,15 @@
-import type { TableEvents, TableMessages, TableMessageType } from '@felt-table/protocol';
+import type { PuzzleCut } from '@felt-table/engine';
+import type {
+  ApiErrorCode,
+  PuzzleSampleId,
+  StoredImageInfo,
+  TableEvents,
+  TableMessages,
+  TableMessageType,
+  UnsplashPhotoPage,
+  UnsplashStatus,
+  UnsplashTopic,
+} from '@felt-table/protocol';
 import type { TableSnapshot } from '@felt-table/protocol/state';
 import type { Language, TranslationKey, TranslationValues } from '../i18n';
 import type { WidgetPreference } from '../stores/ui/widgets/types';
@@ -34,6 +45,10 @@ export interface TableLinkListeners {
   // The shared state changed (and once right after joining).
   change: (snapshot: TableSnapshot) => void;
   reaction: (event: TableEvents['reaction']) => void;
+  snapped: (event: TableEvents['snapped']) => void;
+  cursor: (event: TableEvents['cursor']) => void;
+  // The current puzzle's shapes (sent when a puzzle starts, or when we ask).
+  geometry: (event: TableEvents['geometry']) => void;
   // The server refused one of our messages.
   refused: (event: TableEvents['error']) => void;
   // The connection dropped; the client is trying to get back in.
@@ -70,6 +85,69 @@ export interface AddressService {
   reload: () => void;
 }
 
+// A core-api call's outcome. Never rejects: a lost connection is NETWORK.
+export type ApiResult<T> = { ok: true; value: T } | { ok: false; error: ApiErrorCode | 'NETWORK' };
+
+export interface PicturesApiService {
+  unsplashStatus: () => Promise<ApiResult<UnsplashStatus>>;
+  unsplashFeatured: (page: number) => Promise<ApiResult<UnsplashPhotoPage>>;
+  unsplashTopic: (slug: UnsplashTopic, page: number) => Promise<ApiResult<UnsplashPhotoPage>>;
+  unsplashSearch: (query: string, page: number) => Promise<ApiResult<UnsplashPhotoPage>>;
+  // The server fetches the link, checks it's a picture and keeps it for the table.
+  imageFromLink: (url: string) => Promise<ApiResult<StoredImageInfo>>;
+}
+
+export interface SamplePicture {
+  canvas: HTMLCanvasElement;
+  // For <img>: a data URL of the painting.
+  url: string;
+}
+
+export interface SamplesService {
+  picture: (id: PuzzleSampleId) => SamplePicture;
+}
+
+export type PictureToLoad = { kind: 'sample'; id: PuzzleSampleId } | { kind: 'unsplash' | 'image'; src: string };
+
+export type PictureLoadResult = { ok: true; image: CanvasImageSource } | { ok: false };
+
+export interface PictureLoaderService {
+  load: (picture: PictureToLoad) => Promise<PictureLoadResult>;
+}
+
+// One piece, drawn ahead of time. Positions are world units relative to the piece's home.
+export interface PieceSprite {
+  path: Path2D;
+  image: CanvasImageSource;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  shadow: CanvasImageSource;
+  shadowX: number;
+  shadowY: number;
+  shadowWidth: number;
+  shadowHeight: number;
+}
+
+export interface PieceArt {
+  // By piece id.
+  sprites: PieceSprite[];
+}
+
+export interface PieceArtJob {
+  promise: Promise<PieceArt>;
+  cancel: () => void;
+}
+
+// Whether (x, y) is inside a path drawn at the origin.
+export type PathHitService = (path: Path2D, x: number, y: number) => boolean;
+
+export interface PieceArtService {
+  // Draws the pieces a slice at a time; `onProgress` gets the number done so far.
+  prepare: (cut: PuzzleCut, image: CanvasImageSource, pixelRatio: number, onProgress: (done: number) => void) => PieceArtJob;
+}
+
 // Everything with a side effect that stores need, injected so stores stay testable.
 export interface Services {
   preferences: PreferencesService;
@@ -77,12 +155,20 @@ export interface Services {
   translator: TranslatorService;
   tableClient: TableClientService;
   address: AddressService;
+  picturesApi: PicturesApiService;
+  samples: SamplesService;
+  pictureLoader: PictureLoaderService;
+  pieceArt: PieceArtService;
+  isInPath: PathHitService;
+  // Screen pixels per CSS pixel, capped at 2 (pieces are drawn ahead at this sharpness).
+  pixelRatio: () => number;
   schedule: Schedule;
   repeat: Schedule;
   random: () => number;
   now: () => number;
   createId: () => string;
   origin: string;
-  browserLanguage: string;
+  // Most preferred first.
+  browserLanguages: readonly string[];
   isWideLayout: boolean;
 }

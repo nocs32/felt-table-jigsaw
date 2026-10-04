@@ -18,6 +18,11 @@ if (!rootElement) {
 
 const store = createRootStore();
 
+// Development only: the root store as `window.feltTable`, for poking at it from the console.
+if (import.meta.env.DEV) {
+  Object.assign(window, { feltTable: store });
+}
+
 syncDocumentLanguage(store.locale);
 startKeyboardShortcuts(store);
 store.room.connection.open();

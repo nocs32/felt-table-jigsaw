@@ -4,6 +4,7 @@ import type { Localizer, Translate } from '../locale';
 import type { RoomPresenceStore } from './presence';
 import { backgroundLabel } from './table-backgrounds';
 import type { FeedEvent, FeedItem, FeedItemKind, PlayerColor } from './types';
+import { formatElapsed } from './puzzle/finish';
 
 export interface FeedEntry {
   id: string;
@@ -40,6 +41,12 @@ const describe = (event: FeedEvent, t: Translate): string => {
       return t('feed.background', { surface: backgroundLabel(event.background, t) });
     case 'renamed':
       return t('feed.renamed', { name: event.name });
+    case 'puzzle':
+      return event.replacedPercent === null
+        ? t('feed.puzzle', { count: event.pieces })
+        : t('feed.puzzleReplaced', { count: event.pieces, percent: event.replacedPercent });
+    case 'finished':
+      return t('feed.finished', { time: formatElapsed(event.elapsedMs) });
   }
 };
 

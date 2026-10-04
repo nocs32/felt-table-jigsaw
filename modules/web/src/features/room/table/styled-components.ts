@@ -16,6 +16,52 @@ export const RoomTableFelt = styled(TableSurface, {
   base: { position: 'absolute', inset: '0', transition: 'background-color 0.4s ease' },
 });
 
+// See-through, over the felt: the pieces cast their shadows onto the table surface below.
+export const RoomTableBoardCanvas = styled('canvas', {
+  base: { position: 'absolute', inset: '0', display: 'block', width: '100%', height: '100%', touchAction: 'none' },
+  variants: {
+    cursor: {
+      default: { cursor: 'default' },
+      grab: { cursor: 'grab' },
+      grabbing: { cursor: 'grabbing' },
+      notAllowed: { cursor: 'not-allowed' },
+    },
+  },
+});
+
+export const RoomTableLoadingRoot = styled('div', {
+  base: {
+    position: 'absolute',
+    inset: '0',
+    display: 'grid',
+    placeItems: 'center',
+    paddingBottom: '96px',
+    pointerEvents: 'none',
+  },
+});
+
+export const RoomTableLoadingCard = styled('p', {
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '10px',
+    paddingInline: '16px',
+    paddingBlock: '10px',
+    borderRadius: '999px',
+    bg: 'bg.surface',
+    color: 'fg.default',
+    boxShadow: 'floating',
+    fontSize: '14px',
+    fontWeight: '700',
+    fontVariantNumeric: 'tabular-nums',
+    animation: 'fadeIn 0.2s ease-out',
+    '& svg': { width: '16px', height: '16px', animation: 'spin 0.9s linear infinite' },
+  },
+  variants: {
+    failed: { true: { color: 'danger' } },
+  },
+});
+
 export const RoomTableEmptyRoot = styled('div', {
   base: {
     position: 'absolute',
@@ -65,6 +111,26 @@ export const RoomTableEmptyTitle = styled('h2', {
 
 export const RoomTableEmptyText = styled('p', {
   base: { fontSize: '15px', color: 'fg.muted', textWrap: 'balance' },
+});
+
+export const RoomTableFinishedStats = styled('ul', {
+  base: { display: 'grid', gap: '6px', width: '100%', maxHeight: '200px', marginBlock: '4px', overflowY: 'auto', textAlign: 'left' },
+});
+
+export const RoomTableFinishedStat = styled('li', {
+  base: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' },
+});
+
+export const RoomTableFinishedStatName = styled('span', {
+  base: { flex: '1', minWidth: '0', fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+});
+
+export const RoomTableFinishedStatJoins = styled('span', {
+  base: { color: 'fg.muted', fontVariantNumeric: 'tabular-nums' },
+});
+
+export const RoomTableFinishedActions = styled('div', {
+  base: { display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '4px' },
 });
 
 export const RoomTableFlightsRoot = styled('div', {

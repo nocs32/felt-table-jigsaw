@@ -75,15 +75,19 @@ src/
 ├─ logger.ts
 ├─ limits.ts
 ├─ health/health-router.ts
-├─ images/
-│  ├─ images-router.ts
-│  ├─ images-upload-handler.ts
-│  └─ image-store.ts
+├─ images/                   pictures from a link (later: uploads)
+│  ├─ image-store.ts         ImageStore: in memory, held by tables, unheld ones expire
+│  ├─ link-fetcher.ts        ImageLinkFetcher: refuses private addresses, caps time and size
+│  ├─ probe.ts               probeImage: is it really a JPG/PNG/WebP/GIF, and how big
+│  ├─ service.ts             ImagesService
+│  └─ router.ts              createImagesRouter (/api/images)
 └─ table-room/
    ├─ index.ts                TableRoom: wires the parts to Colyseus
    ├─ members.ts              TableRoomMembers
    ├─ feed.ts                 TableRoomFeed
    ├─ settings.ts             TableRoomSettings (name, surface)
+   ├─ puzzle.ts               TableRoomPuzzle (cut, scatter, holds, drops, finish)
+   ├─ pictures.ts             TableRoomPictures (looks up the picked picture)
    ├─ rate-limits.ts          TableRoomRateLimits
    ├─ lifecycle.ts            TableRoomLifecycle
    └─ *.test.ts

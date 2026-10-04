@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import type { ReactElement } from 'react';
 import { useRootStore } from '../../stores/use-root-store';
 import { RoomHeader } from './header';
+import { RoomNewPuzzle } from './new-puzzle';
 import { RoomStatus } from './status';
 import { RoomMain, RoomRoot } from './styled-components';
 import { RoomTable } from './table';
@@ -23,6 +24,7 @@ export const Room = observer(function Room(): ReactElement {
         <RoomHeader />
         <RoomTable />
       </RoomMain>
+      <RoomNewPuzzle />
     </RoomRoot>
   );
 });

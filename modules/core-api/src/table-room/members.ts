@@ -77,6 +77,18 @@ export class TableRoomMembers {
     return name;
   }
 
+  // Counts the groups someone joined onto others.
+  credit(id: string, joins: number): void {
+    this.#get(id).joins += joins;
+  }
+
+  // A new puzzle: everyone starts from zero.
+  resetJoins(): void {
+    this.#members.forEach((member) => {
+      member.joins = 0;
+    });
+  }
+
   author(id: string): TableRoomAuthor {
     const { name, color } = this.#get(id);
 

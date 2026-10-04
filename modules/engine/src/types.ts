@@ -48,6 +48,24 @@ export interface PuzzleCut {
   pieces: CutPiece[];
 }
 
+/**
+ * The cut as exact numbers: every point sits on a 1/16-unit grid. The server sends this (encoded by
+ * `encodeGeometry`) and every browser rebuilds the same pieces from it with `buildCut`.
+ */
+export interface CutGeometry {
+  width: number;
+  height: number;
+  cols: number;
+  rows: number;
+  shape: PieceShape;
+  /** Lattice corners, row by row: (rows + 1) * (cols + 1) points. The inner ones are jittered. */
+  corners: Point[];
+  /** The 8 inner points of each inner horizontal edge: rows - 1 lines of `cols` edges, top line first. */
+  across: Point[][];
+  /** The 8 inner points of each inner vertical edge: cols - 1 lines of `rows` edges, left line first. */
+  down: Point[][];
+}
+
 export interface CutOptions {
   aspect: number;
   pieceCount: number;

@@ -6,6 +6,7 @@ import type { LocaleStore, Translate } from '../locale';
 import { NameFieldStore } from '../name-field';
 import { RoomBackgroundStore } from './background';
 import { RoomConnectionStore } from './connection';
+import { RoomCursorsStore } from './cursors';
 import { RoomFeedStore } from './feed';
 import { RoomPresenceStore } from './presence';
 import { RoomPuzzleStore } from './puzzle';
@@ -19,6 +20,7 @@ import { RoomSyncedValueStore } from './synced-value';
 export class RoomStore {
   readonly connection: RoomConnectionStore;
   readonly presence: RoomPresenceStore;
+  readonly cursors: RoomCursorsStore;
   readonly feed: RoomFeedStore;
   readonly background: RoomBackgroundStore;
   readonly reactions: RoomReactionsStore;
@@ -40,19 +42,15 @@ export class RoomStore {
     this.#t = t;
     this.#name = new RoomSyncedValueStore(defaultTableName, services);
 
-    this.connection = new RoomConnectionStore({
-      ...services,
-      t,
-      receive: (snapshot) => this.receive(snapshot),
-      receiveReaction: (event) => this.receiveReaction(event),
-    });
-
+    this.connection = this.#createConnection();
     this.presence = new RoomPresenceStore(t);
+    this.cursors = new RoomCursorsStore({ ...services, send, presence: this.presence });
     this.feed = new RoomFeedStore({ presence: this.presence, locale, send: (text) => send('chat', { text }) });
     this.background = new RoomBackgroundStore({ ...services, t, send: (value) => send('setBackground', { value }) });
     this.reactions = new RoomReactionsStore({ ...services, t, send: (emoji) => send('react', { emoji }) });
     this.share = new RoomShareStore({ ...services, roomId: () => this.connection.roomId, t });
-    this.puzzle = new RoomPuzzleStore(t);
+
+    this.puzzle = this.#createPuzzle(send);
     this.nameField = this.#createNameField();
     this.myNameField = this.#createMyNameField();
 
@@ -61,6 +59,7 @@ export class RoomStore {
       {
         connection: false,
         presence: false,
+        cursors: false,
         feed: false,
         background: false,
         reactions: false,
@@ -86,6 +85,7 @@ export class RoomStore {
     this.presence.receive(toMembers(snapshot.members), this.connection.sessionId);
     this.feed.receive(snapshot.feed.map(toFeedItem));
     this.background.receive(snapshot.background);
+    this.puzzle.receive(snapshot.puzzle, snapshot.groups);
   }
 
   receiveReaction({ sessionId, emoji }: TableReactionEvent): void {
@@ -107,6 +107,32 @@ export class RoomStore {
   // Sub-stores are built before `connection`, so they reach it through this lambda.
   #sender(): RoomConnectionStore['send'] {
     return (type, message) => this.connection.send(type, message);
+  }
+
+  // Everything the server tells this table goes to the part it's about.
+  #createConnection(): RoomConnectionStore {
+    return new RoomConnectionStore({
+      ...this.#services,
+      t: this.#t,
+      receive: (snapshot) => this.receive(snapshot),
+      receiveReaction: (event) => this.receiveReaction(event),
+      receiveGeometry: (event) => this.puzzle.receiveGeometry(event),
+      receiveSnapped: (event) => this.puzzle.receiveSnapped(event),
+      receiveCursor: (event) => this.cursors.receive(event),
+      receiveRefusal: ({ code }) => this.puzzle.refuse(code),
+    });
+  }
+
+  #createPuzzle(send: RoomConnectionStore['send']): RoomPuzzleStore {
+    return new RoomPuzzleStore({
+      ...this.#services,
+      t: this.#t,
+      send,
+      sessionId: () => this.connection.sessionId,
+      members: () => this.presence.members,
+      colorOf: (sessionId) => this.presence.find(sessionId)?.color ?? null,
+      trackCursor: (point) => this.cursors.track(point),
+    });
   }
 
   #createNameField(): NameFieldStore {

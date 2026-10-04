@@ -41,3 +41,5 @@ pnpm --filter @felt-table/core-api test   # also: @felt-table/engine
 - **pnpm workspaces:** the packages are listed in `pnpm-workspace.yaml`. Add a dependency with `pnpm --filter @felt-table/<module> add <pkg>`.
 - **pnpm's release-age guard:** pnpm refuses versions published in the last day. Pick the previous version instead of adding exceptions.
 - **Testing multiplayer:** `/` creates a table and redirects to `/r/:id`; open that link in a second tab to be a second person. Each tab keeps its seat across reloads (sessionStorage).
+- **Tables live in core-api's memory:** restarting it wipes every table, and editing server code while `pnpm dev` runs restarts it (`tsx watch`). Old links then show "This table has been cleared".
+- **Dev handle:** in development the root store is `window.feltTable` (e.g. `feltTable.room.puzzle.groups`), for checking state from the console or a test script.

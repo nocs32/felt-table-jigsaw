@@ -6,6 +6,7 @@ import { CloseIcon } from '../../../../assets';
 import type { PuzzlePicture } from '../../../../stores/room/types';
 import { useRootStore } from '../../../../stores/use-root-store';
 import { RoomTablePictureCredit } from './credit';
+import { RoomTablePictureSource } from './source';
 import {
   RoomTablePictureFullBackdrop,
   RoomTablePictureFullCaption,
@@ -31,7 +32,9 @@ export const RoomTablePictureFull = observer(function RoomTablePictureFull({ pic
           <RoomTablePictureFullContent aria-label={locale.t('picture.label')}>
             <RoomTablePictureFullImage src={picture.src} alt={picture.alt} />
             <RoomTablePictureFullCaption>
-              {picture.credit ? <RoomTablePictureCredit credit={picture.credit} /> : picture.alt}
+              {picture.credit && <RoomTablePictureCredit credit={picture.credit} />}
+              {picture.source && <RoomTablePictureSource source={picture.source} />}
+              {!picture.credit && !picture.source && picture.alt}
             </RoomTablePictureFullCaption>
             <RoomTablePictureFullClose aria-label={locale.t('picture.close')} title={locale.t('picture.close')}>
               <CloseIcon />

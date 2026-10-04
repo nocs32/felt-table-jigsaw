@@ -10,6 +10,8 @@ export interface Member {
   name: string;
   color: PlayerColor;
   status: PresenceStatus;
+  // Groups they joined in this puzzle.
+  joins: number;
 }
 
 export type TableBackground = { kind: 'preset'; preset: TableBackgroundPreset } | { kind: 'color'; color: string };
@@ -19,7 +21,11 @@ export type FeedEvent =
   | { type: 'joined' }
   | { type: 'left' }
   | { type: 'background'; background: TableBackground }
-  | { type: 'renamed'; name: string };
+  | { type: 'renamed'; name: string }
+  // A new puzzle with this many pieces; `replacedPercent` is how far the one it replaced got.
+  | { type: 'puzzle'; pieces: number; replacedPercent: number | null }
+  // They put the last piece in, `elapsedMs` after the puzzle started.
+  | { type: 'finished'; elapsedMs: number };
 
 interface FeedItemBase {
   id: string;
@@ -41,10 +47,17 @@ export interface PictureCredit {
   sourceUrl: string;
 }
 
+// Where a picture from a link came from, shown instead of a credit.
+export interface PictureSource {
+  url: string;
+  host: string;
+}
+
 export interface PuzzlePicture {
   src: string;
   width: number;
   height: number;
   alt: string;
   credit: PictureCredit | null;
+  source: PictureSource | null;
 }

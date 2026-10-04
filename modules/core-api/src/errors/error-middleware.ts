@@ -38,10 +38,10 @@ export const errorMiddleware: ErrorRequestHandler = (error: unknown, request, re
     return;
   }
 
-  // A bug, not an upstream failure. The contract has no generic code, so the closest one is used with a 500.
+  // A bug, not an upstream failure.
   logger.error('unhandled request error', { method: request.method, path: request.baseUrl + request.path, error: describeError(error) });
 
-  const body: ApiError = { error: 'UNSPLASH_UNAVAILABLE', message: 'Unexpected server error' };
+  const body: ApiError = { error: 'SERVER_ERROR', message: 'Unexpected server error' };
 
   response.status(500).json(body);
 };
