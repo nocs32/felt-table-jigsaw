@@ -74,15 +74,16 @@ const toLink = (room: TableRoom): TableLink => ({
     room.onMessage('error', listeners.refused);
     room.onDrop(() => listeners.drop());
 
+    // The SDK calls this before it stores the new seat token, so the token is saved a moment later
+    // (otherwise a reload after a reconnect would lose the seat).
     room.onReconnect(() => {
-      writeSeat(room.roomId, room.reconnectionToken);
+      window.setTimeout(() => writeSeat(room.roomId, room.reconnectionToken), 0);
       listeners.reconnect();
     });
 
-    room.onLeave(() => {
-      writeSeat(room.roomId, null);
-      listeners.close();
-    });
+    // The seat is lost, or the SDK gave up reconnecting (it doesn't try in the first seconds after
+    // joining). The saved seat stays: sitting down again tries it first, while the table still holds it.
+    room.onLeave(() => listeners.close());
 
     // The full state may already be here: it is once it lists us.
     if (room.state.members.has(room.sessionId)) {
